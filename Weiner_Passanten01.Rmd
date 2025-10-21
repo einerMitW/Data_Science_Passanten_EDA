@@ -1,0 +1,189 @@
+---
+title: "Weiner_Passanten01"
+output:
+  html_document:
+    df_print: paged
+  html_notebook:
+    df_print: paged
+  pdf_document: default
+---
+
+Libraries laden
+
+```{r}
+library(tidyverse)
+library(readr)
+library(broom)
+library(gridExtra)
+library(stats)
+library(janitor)
+library(skimr)
+library(lubridate)
+library(dplyr)
+library(lubridate)
+```
+
+```{r}
+getwd()
+```
+
+# Passanten in Würzburg
+
+## Import und Datenbereinigung
+
+zuerst importiert man die Daten und zeigt Sie an um zu überprüfen ob der import funktioniert hat.
+
+```{r}
+passanten_raw <- read_csv2("Datensatz/passanten_wuerzburg.csv")
+passanten <- as_tibble(passanten_raw)
+passanten
+```
+
+Nun besitzt man die Daten als Dataframe. Um mit ihnen sinvolle, descriptive oder weiterführend eine Explorative Datenanalyse durchzuführen sollten die Daten zuerst bereinigt werden. Als nächstes prüfen wir ob die Spalentnamen Aussagekräfig sind und ändern sie ab falls notwendig
+
+```{r}
+names(passanten)
+#Formatieren Spalten Namen
+passanten <- clean_names(passanten)
+passanten
+```
+
+Somit können wir nun leer Spalten entfernen und nachsehen wie vollständig die Daten sind.
+
+```{r}
+#Aufzählung der NA nach Spalte
+colSums(is.na(passanten))
+nrow(passanten)
+#Entfernen leere Spalten
+passanten <- janitor::remove_empty(passanten)
+nrow(passanten)
+```
+
+#Die Gehrichtung und erkennung der erwachsenen / kinder fehlt bei 11395 Zeilen. Unvollständige daten bis dahin.Kein komplett leere spalte gefunden. Anschließend Prüfen wir die Datentypen und Einheiten die die Spalten haben.
+
+```{r}
+passanten <- passanten %>% 
+  mutate(
+    temperatur = as.numeric(temperatur),
+    passanten = as.numeric(passanten),
+    zeitstempel = as.Date(zeitstempel)
+  )
+```
+
+Zum Schluss erhalten wir eine übersicht über die Daten
+
+```{r}
+summary(passanten)
+skimr::skim(passanten)
+```
+
+## Aufgabe 1
+
+## Beschreibung der Daten
+
+Der Datensatz besteht aus 26018 Zeile und 14 Spalten.Die in den Spalten aufgezeichneten werte sind:
+
+```{r}
+head(passanten)
+```
+
+Die interessantest Variable ist hierbei die anzahl der Passanten. Dabei werden hir die anzahl der Passanten mit jewails eine Zeitstempel und weiteren Metadaten wie: Temperatur, Ort der Aufzeichnung und Koordinaten des Ortes Zeilenweise angegeben. Die Zeitstempel sind dabei Stündlich für jede der drei Messtationen angegeben.
+
+```{r}
+table(passanten$location_name)
+```
+
+Somit kann man davon ausgehen das die anzahl der Passanten der anzahl der Passanten entspricht die inerhalb einer Stunde durch die Messtation erfasst wurden. Die Metadaten dienen dann zur Interpretation der Hauptdaten.
+
+### Erhebung
+
+Die Daten stamen von zählstationen an verschiedenen Punken aus der Nürnberger Innenstadt. Mit hilfe von Laserschranken zählen diese die Anzahl der Passanten welche gerade die Messtation Queren. Durch das Messen mit meheren Laserschranken pro Messtation kann auch die Geh-Richtung des Passanten bestimmt werden. Zur konsistenz der Daten wird vermerkt: "Nach Herstellerangabe kann mit der verwendeten Technik bis zu einem Durchfluss von ca. 500 Personen pro Minute eine Zählgenauigkeit von 99% erreicht werden." vgl. Methodik_hystreet.com. Dabei ist zu beachten, dass eine Zählstation eine Straße bis Maximal 32m Breite abdecken kann. Die Erheber der daten versichern jedoch, dass "Bei den veröffentlichten Daten handelt es sich immer um die Passantenfrequenz der gesamten Straßenbreite (außer es ist explizit anders angegeben)."
+
+### Standorte
+
+```{r}
+table(passanten$geo_punkt)
+table(passanten$location_name)
+```
+
+Der Datenstatz enthält Koordinaten in der Spalte geo_punkt und die orte der Messtationen in der Spalte location_name. Wenn man sich anschaut wie of eine einzelner Standort vorkommt sieht man, dass es jewail 3 Einzelne Standorte gibt und dazu passend die 3 Standorte in Koordinatenform. Die Summen (Wie oft ein Einzelner eintrag vorkommt) ist ebenfalls gleich. Somit ist eine eindeutige zuordung der Standorte zu den Koordinaten möglich. Gleichzeit können wir sicher sein das keine Falschen Standorte oder Koordinaten vorliegen und das jeder Standort auch mit den Korrekten Korrdinaten versehen sind.Wenn man nun die Koordinaten auf einer Karte anzeigen Lässt erhält man folgendes Bild.
+
+```{r bild-einfuegen, echo=FALSE, out.width="50%", fig.cap="Hier steht die Bildunterschrift."}
+# echo=FALSE versteckt den R-Code im finalen Dokument
+# out.width="50%" setzt die Breite
+# fig.cap="..." fügt eine Unterschrift hinzu
+
+knitr::include_graphics("Bilder/wuerzburg_stadtplan_messtationen.png")
+```
+Man kann sehen, das die Stationen direkt in der Innenstad stationiert sind. Dabei ist jede Station in der Nähe einer Sehenswürdigkeit bzw. Öffentlichen Gebäude. Die Messtation Schönbornstraße befindet sich nah an der Marienkapelle, die Messtation Spiegelstraße auf dem weg zum Hofgarten und die Messtation Kaiserstraße in der nähe zum Hauptbahnhof. Dabei sind alle diese Straßen Hauptverkehrsstraßen auf welchen man mit gleichmäsiger auslastung rechnen kann. Das Dreiecksmuster welche die Stationen Aufspannen bilden somit eine Art Transitstrecke zwischen: Hauptbahnhof -> Hofgarten -> Marienkapelle -> Hauptbahnhof.
+
+## Aufgabe 2
+
+````{r}
+# --- 1. Analyse gegliedert nach Messstellen ---
+# (Wie in deinem Code-Ansatz begonnen)
+
+# Wir gruppieren nach dem Standortnamen
+passanten_pro_location <- passanten %>%
+  group_by(location_name) %>%
+  summarise(
+    
+    # 1. Jahressumme pro Standort
+    # Wir summieren alle Werte in der 'passanten'-Spalte für die jeweilige Gruppe
+    passanten_jahr_summe = sum(passanten, na.rm = TRUE),
+    
+    # Hilfsberechnung: Anzahl der einzigartigen Tage, an denen Daten erfasst wurden
+    # as.Date() wandelt den Zeitstempel in ein reines Datum um
+    # n_distinct() zählt, wie viele einzigartige Tage es gibt
+    anzahl_tage_erfasst = n_distinct(as.Date(zeitstempel)),
+    
+    # 2. Mittelwert pro Monat
+    # Wir nehmen die Jahressumme und teilen sie durch 12 Monate
+    durchschnitt_pro_monat = passanten_jahr_summe / 12,
+    
+    # 3. Mittelwert pro Woche
+    # Wir teilen die Jahressumme durch die Anzahl der Wochen im Jahr
+    # (Anzahl Tage / 7 Tage pro Woche)
+    durchschnitt_pro_woche = passanten_jahr_summe / (anzahl_tage_erfasst / 7),
+
+    # 4. Mittelwert pro Tag
+    # Wir teilen die Jahressumme durch die Anzahl der erfassten Tage
+    durchschnitt_pro_tag = passanten_jahr_summe / anzahl_tage_erfasst,
+    
+    # 5. Mittelwert pro Stunde
+    # Da die Rohdaten bereits stündlich sind, ist dies der 
+    # einfache Mittelwert der 'passanten'-Spalte
+    durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
+  )
+
+# --- 2. Analyse aggregiert (insgesamt) ---
+# (Hier fassen wir alle Messstellen zusammen, indem wir group_by() weglassen)
+
+passanten_insgesamt <- passanten %>%
+  summarise(
+    
+    # 1. Jahressumme (Gesamt)
+    passanten_jahr_summe = sum(passanten, na.rm = TRUE),
+    
+    # Hilfsberechnung: Anzahl der einzigartigen Tage im gesamten Datensatz
+    anzahl_tage_erfasst = n_distinct(as.Date(zeitstempel)),
+
+    # 2. Mittelwert pro Monat (Gesamt)
+    durchschnitt_pro_monat = passanten_jahr_summe / 12,
+    
+    # 3. Mittelwert pro Woche (Gesamt)
+    durchschnitt_pro_woche = passanten_jahr_summe / (anzahl_tage_erfasst / 7),
+    
+    # 4. Mittelwert pro Tag (Gesamt)
+    durchschnitt_pro_tag = passanten_jahr_summe / anzahl_tage_erfasst,
+    
+    # 5. Mittelwert pro Stunde (Gesamt)
+    durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
+  )
+
+passanten_pro_location
+````
+
+
+# Literatur
+https://studyflix.de/statistik/mittelwert-6133
