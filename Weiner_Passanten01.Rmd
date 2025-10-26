@@ -200,8 +200,10 @@ mittelwert_monat <- passanten %>%
    #Vertauschen der Zeilen und Spalten
    pivot_wider(names_from = location_name,
                values_from = monatssumme)%>%
-   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE)) %>%
-   arrange(monat)
+   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE)) 
+# %>%
+#    arrange(monat)
+
 mittelwert_monat
 
 mittelwert_monat_plot <- mittelwert_monat %>% 
@@ -234,6 +236,7 @@ Als durschnittlicher Tageswert
 nach Wochentag anzeigen
 
 ````{r}
+#Berechne Durchschnittlichen Tageswert
 durchschnittlicher_tageswert <- passanten %>% 
    group_by(wochentag, location_name)%>%
    summarise(
@@ -248,7 +251,25 @@ durchschnittlicher_tageswert <- passanten %>%
                                             "Freitag", 
                                             "Samstag", 
                                             "Sonntag"))
-  )
+   )
+   # %>%
+   # pivot_wider(
+   #    names_from = location_name,
+   #    values_from = durchschnitt
+   # )
+   # %>%
+   # mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
+
+durchschnittlicher_tageswert
+
+#Berechne Gesamtsumme
+gesamtsumme_tageswert <- durchschnittlicher_tageswert %>%
+   pivot_wider(
+      names_from = location_name,
+      values_from = durchschnitt
+   )%>%
+   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
+gesamtsumme_tageswert
    
 spider_plot_data <- durchschnittlicher_tageswert %>%
    pivot_wider(
@@ -259,11 +280,11 @@ spider_plot_data <- durchschnittlicher_tageswert %>%
    as.data.frame()
 
 df_weite <- ncol(spider_plot_data)
-df_weite
-min <- min(durchschnittlicher_tageswert$durchschnitt)
-max <- max(durchschnittlicher_tageswert$durchschnitt)
+min <- min(gesamtsumme_tageswert$gesamtsumme)
+max <- max(gesamtsumme_tageswert$gesamtsumme)
+
 #rbind bindet alle werte die man übergibt als neue Zeile auf einen neune df
-spider_plot_data <- rbind(rep(max, df_weite), rep(min, df_weite), spider_plot_data)
+spider_plot_data <- rbind(rep(max, df_weite), rep(min, df_weite), spider_plot_data, gesamtsumme_tageswert$gesamtsumme)
 spider_plot_data
 ````
 
@@ -278,6 +299,62 @@ radarchart(spider_plot_data,
            #Grid
            cglty = 1
            )
+
+ggplot(data = gesamtsumme_tageswert, aes(x = wochentag, y = gesamtsumme)) +
+  geom_line(linewidth = 1) +  # Zeichnet die Linien
+  geom_point() +              # Fügt die Datenpunkte hinzu
+
+  # Titel und Achsenbeschriftungen
+  labs(title = "gesamtsumme über die Wochentage",
+       x = "Wochentage",
+       y = "Summe")
+````
+
+## Aufgabe 5
+Gesucht:
+Je Stunde
+Tagesverlauf
+Nach Messtellen und Gesamtsumme_Messtellen
+
+Problem:
+1. df transformieren in df nach gruppe nach summe
+````{r}
+korrekte_tage <- c("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag")
+
+#Berechne zuerst den median je Stunde in Wide Format pro Location
+passantenanzahl_stunden <- passanten %>%
+   group_by(stunde, location_name) %>%
+   summarise(
+      passantenanzahl = mean(passanten)
+      )%>%
+   ungroup()%>%
+   pivot_wider(
+      names_from = location_name,
+      values_from = passantenanzahl
+   )%>%
+   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
+passantenanzahl_stunden
+
+#Umformen des Wide Format in Long zum Plotten
+passantenanzahl_plot <- passantenanzahl_stunden %>%
+   pivot_longer(cols = -stunde,
+      names_to = "location_name",
+      values_to = "gesamtsumme"
+   )
+passantenanzahl_plot
+?pivot_longer
+````
+
+````{r}
+ggplot(data = passantenanzahl_plot, aes(x = stunde, y = gesamtsumme, color = location_name)) +
+  geom_line(linewidth = 1) +  # Zeichnet die Linien
+  geom_point() +              # Fügt die Datenpunkte hinzu
+
+  # Titel und Achsenbeschriftungen
+  labs(title = "gesamtsumme über die Wochentage",
+       x = "Wochentage",
+       y = "Summe",
+       color = "location")
 ````
 
 # Literatur
