@@ -1,13 +1,49 @@
 ---
 title: "Weiner_Passanten01"
 output:
+  pdf_document:
+    latex_engine: xelatex
   html_document:
     df_print: paged
-  pdf_document: default
-      latex_engin: pdflatex
 ---
 
-Libraries laden
+```{r setup, include=FALSE}
+#Pdf Format Nachschlagewerk {r}:
+#echo = FALSE /verhindert das der code Block im Pdf angezeigt wird.
+#message=FALSE /Beim Knitten werden nun keine Meldungen oder Warnungen von diesem Chunk angezeigt.
+#warning = FALSE /Warnungen wie Removed 3 rows containing missing values... von ggplot2 erscheinen nicht im PDF
+
+# Globale Chunk-Optionen
+library(knitr)
+
+if (knitr::is_html_output()) {
+  knitr::opts_chunk$set(
+    dev       = "png",
+    dpi       = 96,
+    fig.retina= 2,
+    fig.align = "center",
+    fig.width = 8, fig.height = 5,
+    out.width = "100%",
+    message = FALSE, warning = FALSE
+  )
+} else {
+  knitr::opts_chunk$set(
+    dev       = "cairo_pdf",
+    fig.align = "center",
+    fig.width = 7, fig.height = 4.5,
+    message = FALSE, warning = FALSE
+  )
+}
+#Beispiel Doc String zur beschreibung aller der Funktionen
+#' [Kurzer Titel der Funktion, z.B. Addiert zwei Zahlen]
+#' @description
+#' [Kurze Beschreibung, was die Funktion tut.]
+#'
+#' @param param_name_1 [Beschreibung Parameter 1 (Typ, Zweck).]
+#' @return
+#' [Beschreibung des Rückgabewerts (Typ, Inhalt).]
+#'
+```
 
 ```{r}
 library(tidyverse)
@@ -26,6 +62,10 @@ library(fmsb)
 
 ```{r}
 getwd()
+#Globale Variablen
+tage_vektor <- c("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag")
+monat_vektor <- c("Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" )
+location_color = c("Kaiserstraße" = "#8D34D1", "Schönbornstraße" = "#D19534", "Spiegelstraße" = "#2EB865", "Gesamtsumme" = "#000000")
 ```
 
 # Passanten in Würzburg
@@ -41,15 +81,15 @@ passanten <- as_tibble(passanten_raw)
 passanten <- passanten %>%
   select(Zeitstempel,Wetter,Temperatur,Passanten,'Location Name',GeoPunkt) %>%
   mutate(
-    Jahr = year(Zeitstempel),
-    Monat = month(Zeitstempel),
-    Woche = isoweek(Zeitstempel),
-    Tag = day(Zeitstempel),
-    Stunde = hour(Zeitstempel),
-    Wochentag = weekdays(Zeitstempel),
-    TagImJahr = yday(Zeitstempel)
+    jahr = year(Zeitstempel),
+    monat = month(Zeitstempel),
+    woche = isoweek(Zeitstempel),
+    tag = day(Zeitstempel),
+    stunde = hour(Zeitstempel),
+    wochentag = weekdays(Zeitstempel),
+    tag_im_jahr = yday(Zeitstempel)
   ) %>%
-  filter(Jahr != 2023)
+  filter(jahr != 2023)
 ```
 
 Nun besitzt man die Daten als Dataframe. Um mit ihnen sinvolle, descriptive oder weiterführend eine Explorative Datenanalyse durchzuführen sollten die Daten zuerst bereinigt werden. Als nächstes prüfen wir ob die Spalentnamen Aussagekräfig sind und ändern sie ab falls notwendig
@@ -64,28 +104,22 @@ Somit können wir nun leer Spalten entfernen und nachsehen wie vollständig die 
 ```{r}
 #Aufzählung der NA nach Spalte
 colSums(is.na(passanten))
-
-nrow(passanten)
-#Entfernen leere Spalten
-passanten <- janitor::remove_empty(passanten)
-nrow(passanten)
 ```
 
 Zum Schluss erhalten wir eine übersicht über die Daten
 
 ```{r}
-summary(passanten)
-skimr::skim(passanten)
+skim(passanten)
 ```
 
 ## Aufgabe 1
 
 ## Beschreibung der Daten
 
-Der Datensatz besteht aus 26018 Zeile und 14 Spalten.Die in den Spalten aufgezeichneten werte sind:
+Der Datensatz besteht aus 26015 Zeile und 14 Spalten.Die in den Spalten aufgezeichneten werte sind:
 
 ```{r}
-head(passanten)
+skim(passanten)
 ```
 
 Die interessantest Variable ist hierbei die anzahl der Passanten. Dabei werden hir die anzahl der Passanten mit jewails eine Zeitstempel und weiteren Metadaten wie: Temperatur, Ort der Aufzeichnung und Koordinaten des Ortes Zeilenweise angegeben. Die Zeitstempel sind dabei Stündlich für jede der drei Messtationen angegeben.
@@ -103,26 +137,23 @@ Die Daten stamen von zählstationen an verschiedenen Punken aus der Nürnberger 
 ### Standorte
 
 ```{r}
-table(passanten$geo_punkt)
-table(passanten$location_name)
+anzahl_messpunkte_df <- passanten %>%
+  summarise(
+    Anzahl_Locations = n_distinct(location_name),
+    Anzahl_GeoPunkte = n_distinct(geo_punkt)
+  )
+
+werte_messpunkte_df <- passanten %>%
+   summarise(
+      Locations  = unique(location_name),
+      Geo_Punkte  = unique(geo_punkt)
+   )
+
+anzahl_messpunkte_df
+werte_messpunkte_df
 ```
 
 Der Datenstatz enthält Koordinaten in der Spalte geo_punkt und die orte der Messtationen in der Spalte location_name. Wenn man sich anschaut wie of eine einzelner Standort vorkommt sieht man, dass es jewail 3 Einzelne Standorte gibt und dazu passend die 3 Standorte in Koordinatenform. Die Summen (Wie oft ein Einzelner eintrag vorkommt) ist ebenfalls gleich. Somit ist eine eindeutige zuordung der Standorte zu den Koordinaten möglich. Gleichzeit können wir sicher sein das keine Falschen Standorte oder Koordinaten vorliegen und das jeder Standort auch mit den Korrekten Korrdinaten versehen sind.Wenn man nun die Koordinaten auf einer Karte anzeigen Lässt erhält man folgendes Bild.
-
-
-
-````{r}
-
-````
-
-
-
-
-
-
-
-
-
 
 ```{r bild-einfuegen, echo=FALSE, out.width="50%", fig.cap="Hier steht die Bildunterschrift."}
 # echo=FALSE versteckt den R-Code im finalen Dokument
@@ -137,10 +168,10 @@ Man kann sehen, das die Stationen direkt in der Innenstad stationiert sind. Dabe
 ## Aufgabe 2
 
 ```{r}
-# --- 1. Analyse gegliedert nach Messstellen ---
-# (Wie in deinem Code-Ansatz begonnen)
-
-# Wir gruppieren nach dem Standortnamen
+#--- 1. Analyse aggregiert ---
+# Funktion guppiert nach location_name und berechnet anschließend: passanten jahres Summe, erfasste Tage im Datensatz, durchschnitt pro Monat, durchsnitt pro Tag und durchschnitt pro Stunde.
+# Eingabe: df passanten
+# Ausgabe: aggregiert_jahressumme_pro_location
 aggregiert_jahressume_pro_location <- passanten %>%
   group_by(location_name) %>%
   summarise(
@@ -159,11 +190,14 @@ aggregiert_jahressume_pro_location <- passanten %>%
     # 4. Mittelwert pro Tag
     durchschnitt_pro_tag = passanten_jahr_summe / anzahl_tage_erfasst,
     
-    # 5. Mittelwert pro Stunde
+    # Mittelwert pro Stunde
     durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
   )
 
 # --- 2. Analyse aggregiert (insgesamt) ---
+# Funktion berechnet die Jahressumme aller passenten um damit den Mittelwert über alle Stationen zu berechnen
+# Eingabe: df passanten
+# Ausgabe: passanten_insgesamt
 passanten_insgesamt <- passanten %>%
   summarise(
     
@@ -189,39 +223,50 @@ passanten_insgesamt <- passanten %>%
 aggregiert_jahressume_pro_location
 passanten_insgesamt
 ```
-
 ## Aufgabe 3
 
 ```{r}
-mittelwert_monat <- passanten %>%
+#' [Monatssumme über das Jahr]
+#' @description
+#' [Die Funktion Berechnet die Monatsumme der Passaten, gruppiert nach der location_name pro jahr]
+#'
+#' @param passanten df
+#'
+#' @return
+#' [Rückgabewert ist ein der df sume_monat. Das wide Format zeigt die Daten sortiert nach monat und Location sowie gesamtsumme an]
+#'
+summe_monat <- passanten %>%
    group_by(location_name, monat) %>%
    summarise(monatssumme = sum(passanten)) %>%
    ungroup() %>%
    #Vertauschen der Zeilen und Spalten
    pivot_wider(names_from = location_name,
                values_from = monatssumme)%>%
-   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE)) 
-# %>%
-#    arrange(monat)
+   mutate(Gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE)) %>%
+   arrange(monat)
 
-mittelwert_monat
+summe_monat
 
-mittelwert_monat_plot <- mittelwert_monat %>% 
+#' [long plot format wandlung]
+#' @description
+#' [Formt den df summe_monat in ein long Format um]
+#'
+#' @param summe_monat 
+#'
+#' @return
+#' [Gib den df summe_monat_plot in einem long Format aus welches zur Graphischen Darstellung verwendet werden kann]
+mittelwert_monat_plot <- summe_monat %>% 
    pivot_longer(cols = -monat,
                 names_to = "location_name",
                 values_to = "gesamtsumme")
-
-mittelwert_monat_plot
 ```
 
 ```{r}
 ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = location_name)) +
   geom_line(linewidth = 1) +  # Zeichnet die Linien
-  geom_point() +              # Fügt die Datenpunkte hinzu
-
-  # Stellt sicher, dass die x-Achse die Monate 1, 2, 3... anzeigt
-  scale_x_continuous(breaks = 1:12,
-   labels = c("Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" ))+
+  geom_point() +              # Fügt die Datenpunkte hinzu 
+   scale_color_manual(values = location_color)+
+  scale_x_continuous(breaks = 1:12, labels = monat_vektor)+
 
   # Titel und Achsenbeschriftungen
   labs(title = "Summen pro Monat und Straße",
@@ -231,130 +276,134 @@ ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = loc
 ```
 
 ## Aufgabe 4
-Passantenzahl
-Als durschnittlicher Tageswert
-nach Wochentag anzeigen
 
-````{r}
-#Berechne Durchschnittlichen Tageswert
-durchschnittlicher_tageswert <- passanten %>% 
+```{r}
+#' [summe pro tag]
+#' @description
+#' [die Funktion erstellt eine Datumsspalte und Gruppiert dann nach Datum, wochentag und location. Dann wird für jewails die Summe des einzelnen Tages berechnet in der Spalte Tagessumme]
+#'
+#' @param passanten
+#' @return
+#' [df tagessumme als long format welcher die Summe der Passanten für jeden einzlenen Tag im Jahr enthält]
+tagessumme <- passanten %>% 
+   mutate(
+      Datum = as_date(zeitstempel)
+   ) %>%
+   group_by(Datum, wochentag, location_name) %>%
+   summarise(
+    Tagessumme = sum(passanten, na.rm = TRUE), 
+    .groups = 'drop' )
+tagessumme
+
+#' [durschnitt tageswert]
+#' @description
+#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
+#'
+#' @param tagessumme
+#' @return
+#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
+durchschnittlicher_tageswert_location_plot <- tagessumme %>%
+   mutate(
+    wochentag = factor(wochentag, levels = tage_vektor)
+   )%>%
    group_by(wochentag, location_name)%>%
    summarise(
-      durchschnitt = mean(passanten)
+      durchschnitt_tag = mean(Tagessumme)
    )%>%
-   ungroup()%>%
-   mutate(
-    wochentag = factor(wochentag, levels = c("Montag", 
-                                            "Dienstag", 
-                                            "Mittwoch", 
-                                            "Donnerstag", 
-                                            "Freitag", 
-                                            "Samstag", 
-                                            "Sonntag"))
-   )
-   # %>%
-   # pivot_wider(
-   #    names_from = location_name,
-   #    values_from = durchschnitt
-   # )
-   # %>%
-   # mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
+   ungroup()
+durchschnittlicher_tageswert_location_plot
 
-durchschnittlicher_tageswert
-
-#Berechne Gesamtsumme
-gesamtsumme_tageswert <- durchschnittlicher_tageswert %>%
-   pivot_wider(
-      names_from = location_name,
-      values_from = durchschnitt
-   )%>%
-   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
-gesamtsumme_tageswert
-   
-spider_plot_data <- durchschnittlicher_tageswert %>%
+#' [df in Tabellenformat ]
+#' @description
+#' [Formatiert einen df in eine Aussagekräftige Tabelle]
+#'
+#' @param durschnittlicher_tageswert_plot]
+#' @return
+#' []
+durchschnittlicher_tageswert_location_tabelle <- durchschnittlicher_tageswert_location_plot %>%
    pivot_wider(
       names_from = wochentag,
-      values_from = durchschnitt
+      values_from = durchschnitt_tag
+   ) %>%
+   mutate(
+      Gesamtwert = rowSums(across(where(is.numeric)), na.rm = TRUE)
+   )
+durchschnittlicher_tageswert_location_tabelle
+```
+````{r}
+#' [summe pro tag]
+#' @description
+#' [die Funktion erstellt eine Datumsspalte und Gruppiert dann nach Datum, wochentag und location. Dann wird für jewails die Summe des einzelnen Tages berechnet in der Spalte Tagessumme]
+#'
+#' @param passanten
+#' @return
+#' [df tagessumme als long format welcher die Summe der Passanten für jeden einzlenen Tag im Jahr enthält]
+gesamttagessumme <- passanten %>% 
+   mutate(
+      Datum = as_date(zeitstempel)
+   ) %>%
+   group_by(Datum, wochentag) %>%
+   summarise(
+    Tagessumme_Gesamt = sum(passanten, na.rm = TRUE), 
+    .groups = 'drop' )
+gesamttagessumme
+
+#' [durschnitt tageswert]
+#' @description
+#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
+#'
+#' @param tagessumme
+#' @return
+#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
+durchschnittlicher_tageswert_gesamt_plot <- gesamttagessumme %>%
+   mutate(
+    wochentag = factor(wochentag, levels = tage_vektor)
    )%>%
-   select(-location_name)%>%
-   as.data.frame()
+   group_by(wochentag)%>%
+   summarise(
+      durchschnitt_gesamt = mean(Tagessumme_Gesamt)
+   )%>%
+   ungroup()
+durchschnittlicher_tageswert_gesamt_plot
 
-df_weite <- ncol(spider_plot_data)
-min <- min(gesamtsumme_tageswert$gesamtsumme)
-max <- max(gesamtsumme_tageswert$gesamtsumme)
-
-#rbind bindet alle werte die man übergibt als neue Zeile auf einen neune df
-spider_plot_data <- rbind(rep(max, df_weite), rep(min, df_weite), spider_plot_data, gesamtsumme_tageswert$gesamtsumme)
-spider_plot_data
 ````
-
-````{r}
-radarchart(spider_plot_data,
-           title = "Durchschnittlicher Tageswert nach Wochentagen.",
-           #Netz
-           pcol= rgb(0.5,0,0.5),
-           pfcol=rgb(0.2,0.5,0.5,0.5),
-           plty = 1,
-           
-           #Grid
-           cglty = 1
-           )
-
-ggplot(data = gesamtsumme_tageswert, aes(x = wochentag, y = gesamtsumme)) +
-  geom_line(linewidth = 1) +  # Zeichnet die Linien
-  geom_point() +              # Fügt die Datenpunkte hinzu
-
-  # Titel und Achsenbeschriftungen
-  labs(title = "gesamtsumme über die Wochentage",
-       x = "Wochentage",
-       y = "Summe")
-````
-
 ## Aufgabe 5
-Gesucht:
-Je Stunde
-Tagesverlauf
-Nach Messtellen und Gesamtsumme_Messtellen
 
-Problem:
-1. df transformieren in df nach gruppe nach summe
 ````{r}
-korrekte_tage <- c("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag")
-
 #Berechne zuerst den median je Stunde in Wide Format pro Location
 passantenanzahl_stunden <- passanten %>%
-   group_by(stunde, location_name) %>%
-   summarise(
-      passantenanzahl = mean(passanten)
-      )%>%
-   ungroup()%>%
-   pivot_wider(
-      names_from = location_name,
-      values_from = passantenanzahl
-   )%>%
-   mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
+group_by(stunde, location_name) %>%
+summarise(
+passantenanzahl = mean(passanten)
+)%>%
+ungroup()%>%
+pivot_wider(
+names_from = location_name,
+values_from = passantenanzahl
+)%>%
+mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
 passantenanzahl_stunden
 
-#Umformen des Wide Format in Long zum Plotten
-passantenanzahl_plot <- passantenanzahl_stunden %>%
-   pivot_longer(cols = -stunde,
-      names_to = "location_name",
-      values_to = "gesamtsumme"
-   )
-passantenanzahl_plot
-?pivot_longer
 ````
 
 ````{r}
+#Umformen des Wide Format in Long zum Plotten
+passantenanzahl_plot <- passantenanzahl_stunden %>%
+pivot_longer(cols = -stunde,
+names_to = "location_name",
+values_to = "gesamtsumme"
+)
+#passantenanzahl_plot
 ggplot(data = passantenanzahl_plot, aes(x = stunde, y = gesamtsumme, color = location_name)) +
-  geom_line(linewidth = 1) +  # Zeichnet die Linien
-  geom_point() +              # Fügt die Datenpunkte hinzu
+geom_line(linewidth = 1) + # Zeichnet die Linien
+geom_point() +
+ # Fügt die Datenpunkte hinzu
+# Titel und Achsenbeschriftungen
+labs(title = "gesamtsumme über die Wochentage",
+x = "Wochentage",
+y = "Summe",
+color = "location")
 
-  # Titel und Achsenbeschriftungen
-  labs(title = "gesamtsumme über die Wochentage",
-       x = "Wochentage",
-       y = "Summe",
-       color = "location")
 ````
 
 # Literatur
