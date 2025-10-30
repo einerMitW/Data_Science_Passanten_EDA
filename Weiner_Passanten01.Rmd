@@ -276,21 +276,17 @@ ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = loc
 ## Aufgabe 4
 
 ```{r}
-#' [summe pro tag]
-#' @description
-#' [die Funktion erstellt eine Datumsspalte und Gruppiert dann nach Datum, wochentag und location. Dann wird für jewails die Summe des einzelnen Tages berechnet in der Spalte Tagessumme]
-#'
-#' @param passanten
-#' @return
-#' [df tagessumme als long format welcher die Summe der Passanten für jeden einzlenen Tag im Jahr enthält]
 tagessumme <- passanten %>% 
    mutate(
       Datum = as_date(zeitstempel)
    ) %>%
    group_by(Datum, wochentag, location_name) %>%
    summarise(
-    Tagessumme = sum(passanten, na.rm = TRUE), 
-    .groups = 'drop' )
+    Tagessumme = sum(passanten, na.rm = TRUE)
+    ) %>%
+   ungroup()
+
+
 
 #' [durschnitt tageswert]
 #' @description
@@ -308,6 +304,7 @@ durchschnittlicher_tageswert_location_plot <- tagessumme %>%
       durchschnitt_tag = mean(Tagessumme)
    )%>%
    ungroup()
+durchschnittlicher_tageswert_location_plot
 
 #' [df in Tabellenformat ]
 #' @description
@@ -316,23 +313,14 @@ durchschnittlicher_tageswert_location_plot <- tagessumme %>%
 #' @param durschnittlicher_tageswert_plot]
 #' @return
 #' []
-durchschnittlicher_tageswert_location_tabelle <- durchschnittlicher_tageswert_location_plot %>%
+durchschnittlicher_tageswert_location_wide <- durchschnittlicher_tageswert_location_plot %>%
    pivot_wider(
       names_from = wochentag,
       values_from = durchschnitt_tag
-   ) %>%
-   mutate(
-      Gesamtwert = rowSums(across(where(is.numeric)), na.rm = TRUE)
    )
-durchschnittlicher_tageswert_location_tabelle
+durchschnittlicher_tageswert_location_wide
 ```
 ````{r}
-#' [summe pro tag]
-#' @description
-#' [die Funktion erstellt eine Datumsspalte und Gruppiert dann nach Datum, wochentag und location. Dann wird für jewails die Summe des einzelnen Tages berechnet in der Spalte Tagessumme]
-#' @param passanten
-#' @return
-#' [df tagessumme als long format welcher die Summe der Passanten für jeden einzlenen Tag im Jahr enthält]
 gesamttagessumme <- passanten %>% 
    mutate(
       Datum = as_date(zeitstempel)
@@ -360,6 +348,19 @@ durchschnittlicher_tageswert_gesamt_plot <- gesamttagessumme %>%
 durchschnittlicher_tageswert_gesamt_plot
 
 ````
+````{r}
+ggplot() +
+   geom_col(data = durchschnittlicher_tageswert_location_plot,
+            aes(x = wochentag, y = durchschnitt_tag, fill = location_name)) +
+   scale_fill_manual(values = location_color) +
+   labs(title = "Aufgabe 4: Durchschnittl. Tageswert pro Wochentag (Gestapelt)",
+        x = "Wochentag",
+        y = "Durchschnittl. Passanten",
+        fill = "Messtellen")
+
+````
+
+
 ## Aufgabe 5
 
 ````{r}
