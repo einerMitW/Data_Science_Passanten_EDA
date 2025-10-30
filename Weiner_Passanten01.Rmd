@@ -38,11 +38,9 @@ if (knitr::is_html_output()) {
 #' [Kurzer Titel der Funktion, z.B. Addiert zwei Zahlen]
 #' @description
 #' [Kurze Beschreibung, was die Funktion tut.]
-#'
 #' @param param_name_1 [Beschreibung Parameter 1 (Typ, Zweck).]
 #' @return
 #' [Beschreibung des Rückgabewerts (Typ, Inhalt).]
-#'
 ```
 
 ```{r}
@@ -293,7 +291,6 @@ tagessumme <- passanten %>%
    summarise(
     Tagessumme = sum(passanten, na.rm = TRUE), 
     .groups = 'drop' )
-tagessumme
 
 #' [durschnitt tageswert]
 #' @description
@@ -311,7 +308,6 @@ durchschnittlicher_tageswert_location_plot <- tagessumme %>%
       durchschnitt_tag = mean(Tagessumme)
    )%>%
    ungroup()
-durchschnittlicher_tageswert_location_plot
 
 #' [df in Tabellenformat ]
 #' @description
@@ -334,7 +330,6 @@ durchschnittlicher_tageswert_location_tabelle
 #' [summe pro tag]
 #' @description
 #' [die Funktion erstellt eine Datumsspalte und Gruppiert dann nach Datum, wochentag und location. Dann wird für jewails die Summe des einzelnen Tages berechnet in der Spalte Tagessumme]
-#'
 #' @param passanten
 #' @return
 #' [df tagessumme als long format welcher die Summe der Passanten für jeden einzlenen Tag im Jahr enthält]
@@ -346,12 +341,10 @@ gesamttagessumme <- passanten %>%
    summarise(
     Tagessumme_Gesamt = sum(passanten, na.rm = TRUE), 
     .groups = 'drop' )
-gesamttagessumme
 
 #' [durschnitt tageswert]
 #' @description
 #' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
-#'
 #' @param tagessumme
 #' @return
 #' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
@@ -370,40 +363,82 @@ durchschnittlicher_tageswert_gesamt_plot
 ## Aufgabe 5
 
 ````{r}
-#Berechne zuerst den median je Stunde in Wide Format pro Location
-passantenanzahl_stunden <- passanten %>%
-group_by(stunde, location_name) %>%
-summarise(
-passantenanzahl = mean(passanten)
-)%>%
-ungroup()%>%
-pivot_wider(
-names_from = location_name,
-values_from = passantenanzahl
-)%>%
-mutate(gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE))
-passantenanzahl_stunden
+#'[Stündl. Mittelwert (Gegliedert)]
+#' @description
+#' Berechnet den durchschnittlichen Passantenwert für jede Stunde (0-23)
+#' und für jede einzelne Messstelle ('location_name').
+#' @param passanten [DataFrame] Das Roh-DataFrame 'passanten'.
+#'   Benötigt die Spalten 'stunde', 'location_name' und 'passanten'.
+#' @return
+#' [DataFrame] 'passantenanzahl_stunden_plot' (langes Format).
+#'   Enthält 72 Zeilen (24h * 3 Messstellen) mit dem stündlichen Mittelwert.
+passantenanzahl_stunden_plot <- passanten %>%
+   group_by(stunde, location_name) %>%
+   summarise(
+      passantenanzahl = mean(passanten)
+      )%>%
+   ungroup()
+
+
+
+#' [Stündl. Mittelwert (Summiert)]
+#' @description
+#' Berechnet den durchschnittlichen Passantenwert für jede Stunde (0-23)
+#' über ALLE Messstellen hinweg (Gesamtdurchschnitt).
+#' @param passanten [DataFrame] Das Roh-DataFrame 'passanten'.
+#'   Benötigt die Spalten 'stunde' und 'passanten'.
+#' @return
+#' [DataFrame] 'avg_stunde_gesamt' (langes Format).
+#'   Enthält 24 Zeilen (eine pro Stunde) mit dem Gesamt-Stundenmittelwert.
+avg_stunde_gesamt <- passanten %>%
+   group_by(stunde) %>%
+   summarise(
+      durchschnitt_passanten_gesamt = mean(passanten, na.rm = TRUE)
+   )%>%
+   ungroup()
+
+
+#' [Stündl. Mittelwert (Breites Format)]
+#' @description
+#' Wandelt das "lange" Plot-Format in ein "breites" Tabellen-Format um.
+#' Jede Messstelle wird zu einer eigenen Spalte.
+#' @param passantenanzahl_stunden_plot [DataFrame] Das "lange" Ergebnis aus Block 1.
+#' @return
+#' [DataFrame] 'passantenanzahl_stunden_wide'.
+#'   Enthält 24 Zeilen (eine pro Stunde) und Spalten für jede Messstelle.   
+passantenanzahl_stunden_wide <- passantenanzahl_stunden_plot %>%
+   pivot_wider(
+      names_from = location_name,
+      values_from = passantenanzahl
+      )%>%
+   left_join(avg_stunde_gesamt, by = "stunde")
+passantenanzahl_stunden_wide
 
 ````
 
 ````{r}
-#Umformen des Wide Format in Long zum Plotten
-passantenanzahl_plot <- passantenanzahl_stunden %>%
-pivot_longer(cols = -stunde,
-names_to = "location_name",
-values_to = "gesamtsumme"
-)
-#passantenanzahl_plot
-ggplot(data = passantenanzahl_plot, aes(x = stunde, y = gesamtsumme, color = location_name)) +
-geom_line(linewidth = 1) + # Zeichnet die Linien
-geom_point() +
- # Fügt die Datenpunkte hinzu
-# Titel und Achsenbeschriftungen
-labs(title = "gesamtsumme über die Wochentage",
-x = "Wochentage",
-y = "Summe",
-color = "location")
 
+ggplot(data = passantenanzahl_stunden_plot, aes(x = stunde, y = passantenanzahl, color = location_name)) +
+   # 1. Plot
+  geom_line(linewidth = 1) +  # Zeichnet die Linien
+  geom_point() +              # Fügt die Datenpunkte hinzu 
+   scale_color_manual(values = location_color)+
+
+   # 2. Plot
+  geom_line(
+    data = avg_stunde_gesamt, 
+    aes(x = stunde, y = durchschnitt_passanten_gesamt, color = NULL),
+    color = "black",
+    linewidth = 1.5,
+    color = "Gesamtdurchschnitt"
+  ) + 
+   
+   scale_x_continuous(breaks = seq(0, 23, by = 2))
+   
+  labs(title = "Aufgabe 5: Durchschnittlicher Tagesverlauf (Gegliedert & Gesamt)",
+       x = "Uhrzeit (Stunde des Tages)",
+       y = "Durchschnittliche Passanten pro Stunde",
+       color = "Standort")
 ````
 
 # Literatur
