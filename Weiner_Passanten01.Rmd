@@ -221,6 +221,7 @@ passanten_insgesamt <- passanten %>%
 aggregiert_jahressume_pro_location
 passanten_insgesamt
 ```
+
 ## Aufgabe 3
 
 ```{r}
@@ -288,6 +289,43 @@ tagessumme <- passanten %>%
 
 
 
+
+
+
+gesamttagessumme <- passanten %>% 
+   mutate(
+      Datum = as_date(zeitstempel)
+   ) %>%
+   group_by(Datum, wochentag) %>%
+   summarise(
+    Tagessumme_Gesamt = sum(passanten, na.rm = TRUE), 
+    .groups = 'drop' )
+
+#' [durschnitt tageswert]
+#' @description
+#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
+#' @param tagessumme
+#' @return
+#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
+durchschnittlicher_tageswert_gesamt <- gesamttagessumme %>%
+   mutate(
+    wochentag = factor(wochentag, levels = tage_vektor)
+   )%>%
+   group_by(wochentag)%>%
+   summarise(
+      durchschnitt_gesamt = mean(Tagessumme_Gesamt)
+   )%>%
+   ungroup()
+durchschnittlicher_tageswert_gesamt
+
+
+
+
+
+
+
+
+
 #' [durschnitt tageswert]
 #' @description
 #' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
@@ -315,55 +353,76 @@ durchschnittlicher_tageswert_location_plot
 #' []
 durchschnittlicher_tageswert_location_wide <- durchschnittlicher_tageswert_location_plot %>%
    pivot_wider(
-      names_from = wochentag,
+      names_from = location_name,
       values_from = durchschnitt_tag
-   )
+   )%>% left_join(durchschnittlicher_tageswert_gesamt, 
+    by = "wochentag")
 durchschnittlicher_tageswert_location_wide
 ```
-````{r}
-gesamttagessumme <- passanten %>% 
-   mutate(
-      Datum = as_date(zeitstempel)
-   ) %>%
-   group_by(Datum, wochentag) %>%
-   summarise(
-    Tagessumme_Gesamt = sum(passanten, na.rm = TRUE), 
-    .groups = 'drop' )
 
-#' [durschnitt tageswert]
-#' @description
-#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
-#' @param tagessumme
-#' @return
-#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
-durchschnittlicher_tageswert_gesamt_plot <- gesamttagessumme %>%
-   mutate(
+```{r}
+# 1. Nimm deinen "Gesamt"-DF (Bild 2)
+df_gesamt_prepared <- durchschnittlicher_tageswert_gesamt_plot %>%
+  
+  # 2. UMBENENNEN: Die Wert-Spalte muss identisch heißen
+  rename(durchschnitt_tag = durchschnitt_gesamt) %>%
+  
+  # 3. HINZUFÜGEN: Die "Gruppen"-Spalte für die Legende
+  mutate(location_name = "Gesamtdurchschnitt")
+
+
+df_combined_long_plot <- bind_rows(
+  durchschnittlicher_tageswert_location_plot, # Deine 21 Zeilen
+  df_gesamt_prepared                          # Deine 7 vorbereiteten Zeilen
+) %>%
+  # WICHTIG: Stelle sicher, dass die Sortierung (Faktor) erhalten bleibt
+  mutate(
     wochentag = factor(wochentag, levels = tage_vektor)
-   )%>%
-   group_by(wochentag)%>%
-   summarise(
-      durchschnitt_gesamt = mean(Tagessumme_Gesamt)
-   )%>%
-   ungroup()
-durchschnittlicher_tageswert_gesamt_plot
+  )
+df_combined_long_plot
 
-````
-````{r}
+ggplot(
+  data = df_combined_long_plot, 
+  aes(x = wochentag, y = durchschnitt_tag, fill = location_name)
+) +
+  
+  # HIER IST DER SCHLÜSSEL: geom_col() mit position = "dodge"
+  geom_col(position = "dodge") + 
+  
+  # Füge deine 4 Custom-Farben hinzu
+  scale_fill_manual(values = location_color) +
+  
+  labs(
+    title = "Aufgabe 4: Durchschnittl. Tageswert (Gegliedert & Gesamt)",
+    subtitle = "Als gruppiertes Balkendiagramm",
+    x = "Wochentag",
+    y = "Durchschnittlicher Tageswert",
+    fill = "Messstelle / Aggregat"
+  )
+
+
+
+
 ggplot() +
+   #1. Plot
    geom_col(data = durchschnittlicher_tageswert_location_plot,
             aes(x = wochentag, y = durchschnitt_tag, fill = location_name)) +
    scale_fill_manual(values = location_color) +
+   
+   # 2. Plot
+   geom_point(data = durchschnittlicher_tageswert_location_plot,
+              aes(x = wochentag, y = durchschnitt_tag, color = location_name)) +
+   
    labs(title = "Aufgabe 4: Durchschnittl. Tageswert pro Wochentag (Gestapelt)",
         x = "Wochentag",
         y = "Durchschnittl. Passanten",
         fill = "Messtellen")
 
-````
-
+```
 
 ## Aufgabe 5
 
-````{r}
+```{r}
 #'[Stündl. Mittelwert (Gegliedert)]
 #' @description
 #' Berechnet den durchschnittlichen Passantenwert für jede Stunde (0-23)
@@ -415,9 +474,9 @@ passantenanzahl_stunden_wide <- passantenanzahl_stunden_plot %>%
    left_join(avg_stunde_gesamt, by = "stunde")
 passantenanzahl_stunden_wide
 
-````
+```
 
-````{r}
+```{r}
 
 ggplot(data = passantenanzahl_stunden_plot, aes(x = stunde, y = passantenanzahl, color = location_name)) +
    # 1. Plot
@@ -440,7 +499,7 @@ ggplot(data = passantenanzahl_stunden_plot, aes(x = stunde, y = passantenanzahl,
        x = "Uhrzeit (Stunde des Tages)",
        y = "Durchschnittliche Passanten pro Stunde",
        color = "Standort")
-````
+```
 
 # Literatur
 
