@@ -63,7 +63,15 @@ getwd()
 #Globale Variablen
 tage_vektor <- c("Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag")
 monat_vektor <- c("Jan", "Feb", "Mar", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" )
-location_color = c("Kaiserstraße" = "#8D34D1", "Schönbornstraße" = "#D19534", "Spiegelstraße" = "#2EB865", "Gesamtsumme" = "#000000")
+globale_farb_palette = c(
+   "Kaiserstraße" = "#8D34D1",
+   "Schönbornstraße" = "#D19534",
+   "Spiegelstraße" = "#2EB865",
+  
+  # Die Aggregate
+  "Gesamtdurchschnitt" = "#404040", # z.B. Dunkelgrau
+  "Gesamtsumme"        = "#404040"  # z.B. Schwarz
+)
 ```
 
 # Passanten in Würzburg
@@ -218,7 +226,8 @@ passanten_insgesamt <- passanten %>%
     durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
   )
 
-aggregiert_jahressume_pro_location
+kable(aggregiert_jahressume_pro_location, digits = 0, caption = "Jahressumme und Mittelwerte der Passantenanzahl nach Messstelle")
+
 passanten_insgesamt
 ```
 
@@ -264,7 +273,7 @@ mittelwert_monat_plot <- summe_monat %>%
 ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = location_name)) +
   geom_line(linewidth = 1) +  # Zeichnet die Linien
   geom_point() +              # Fügt die Datenpunkte hinzu 
-   scale_color_manual(values = location_color)+
+   scale_color_manual(values = globale_farb_palette)+
   scale_x_continuous(breaks = 1:12, labels = monat_vektor)+
 
   # Titel und Achsenbeschriftungen
@@ -287,11 +296,6 @@ tagessumme <- passanten %>%
     ) %>%
    ungroup()
 
-
-
-
-
-
 gesamttagessumme <- passanten %>% 
    mutate(
       Datum = as_date(zeitstempel)
@@ -300,30 +304,6 @@ gesamttagessumme <- passanten %>%
    summarise(
     Tagessumme_Gesamt = sum(passanten, na.rm = TRUE), 
     .groups = 'drop' )
-
-#' [durschnitt tageswert]
-#' @description
-#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
-#' @param tagessumme
-#' @return
-#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
-durchschnittlicher_tageswert_gesamt <- gesamttagessumme %>%
-   mutate(
-    wochentag = factor(wochentag, levels = tage_vektor)
-   )%>%
-   group_by(wochentag)%>%
-   summarise(
-      durchschnitt_gesamt = mean(Tagessumme_Gesamt)
-   )%>%
-   ungroup()
-durchschnittlicher_tageswert_gesamt
-
-
-
-
-
-
-
 
 
 #' [durschnitt tageswert]
@@ -339,10 +319,26 @@ durchschnittlicher_tageswert_location_plot <- tagessumme %>%
    )%>%
    group_by(wochentag, location_name)%>%
    summarise(
-      durchschnitt_tag = mean(Tagessumme)
+      durchschnitt_wochentag_location = mean(Tagessumme)
    )%>%
    ungroup()
-durchschnittlicher_tageswert_location_plot
+
+
+#' [durschnitt tageswert]
+#' @description
+#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
+#' @param tagessumme
+#' @return
+#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
+durchschnittlicher_tageswert_gesamt <- gesamttagessumme %>%
+   mutate(
+    wochentag = factor(wochentag, levels = tage_vektor)
+   )%>%
+   group_by(wochentag)%>%
+   summarise(
+      durchschnitt_wochentag = mean(Tagessumme_Gesamt)
+   )%>%
+   ungroup()
 
 #' [df in Tabellenformat ]
 #' @description
@@ -354,69 +350,49 @@ durchschnittlicher_tageswert_location_plot
 durchschnittlicher_tageswert_location_wide <- durchschnittlicher_tageswert_location_plot %>%
    pivot_wider(
       names_from = location_name,
-      values_from = durchschnitt_tag
-   )%>% left_join(durchschnittlicher_tageswert_gesamt, 
-    by = "wochentag")
+      values_from = durchschnitt_wochentag_location
+   ) %>% 
+   left_join(durchschnittlicher_tageswert_gesamt,by = "wochentag")
 durchschnittlicher_tageswert_location_wide
 ```
 
 ```{r}
-# 1. Nimm deinen "Gesamt"-DF (Bild 2)
-df_gesamt_prepared <- durchschnittlicher_tageswert_gesamt_plot %>%
-  
-  # 2. UMBENENNEN: Die Wert-Spalte muss identisch heißen
-  rename(durchschnitt_tag = durchschnitt_gesamt) %>%
-  
-  # 3. HINZUFÜGEN: Die "Gruppen"-Spalte für die Legende
+#Forme durchschnittlicher_tageswert_gesamt um, sodass man ihn mit durchschnittlicher_tageswert_gesamt vereinen kann
+durchschnittlicher_tageswert_gesamt_angepasst <- durchschnittlicher_tageswert_gesamt %>%
+  rename(durchschnitt_wochentag_location = durchschnitt_wochentag) %>%
   mutate(location_name = "Gesamtdurchschnitt")
 
-
-df_combined_long_plot <- bind_rows(
-  durchschnittlicher_tageswert_location_plot, # Deine 21 Zeilen
-  df_gesamt_prepared                          # Deine 7 vorbereiteten Zeilen
+#Zusammenfügen der Beiden df's mit bind_rows
+df_gesamt_long_plot <- bind_rows(
+  durchschnittlicher_tageswert_location_plot,
+  durchschnittlicher_tageswert_gesamt_angepasst
 ) %>%
-  # WICHTIG: Stelle sicher, dass die Sortierung (Faktor) erhalten bleibt
+  #Wochentage Richtig Sortieren 
   mutate(
     wochentag = factor(wochentag, levels = tage_vektor)
   )
-df_combined_long_plot
 
-ggplot(
-  data = df_combined_long_plot, 
-  aes(x = wochentag, y = durchschnitt_tag, fill = location_name)
+plot_aufgabe4<- ggplot(
+  data = df_gesamt_long_plot, 
+  aes(x = wochentag, y = durchschnitt_wochentag_location, fill = location_name)
 ) +
-  
-  # HIER IST DER SCHLÜSSEL: geom_col() mit position = "dodge"
+   
   geom_col(position = "dodge") + 
   
   # Füge deine 4 Custom-Farben hinzu
-  scale_fill_manual(values = location_color) +
+  scale_fill_manual(values = globale_farb_palette) +
   
   labs(
     title = "Aufgabe 4: Durchschnittl. Tageswert (Gegliedert & Gesamt)",
     subtitle = "Als gruppiertes Balkendiagramm",
     x = "Wochentag",
     y = "Durchschnittlicher Tageswert",
-    fill = "Messstelle / Aggregat"
+    fill = "Messstelle"
   )
+plot_aufgabe4
 
-
-
-
-ggplot() +
-   #1. Plot
-   geom_col(data = durchschnittlicher_tageswert_location_plot,
-            aes(x = wochentag, y = durchschnitt_tag, fill = location_name)) +
-   scale_fill_manual(values = location_color) +
-   
-   # 2. Plot
-   geom_point(data = durchschnittlicher_tageswert_location_plot,
-              aes(x = wochentag, y = durchschnitt_tag, color = location_name)) +
-   
-   labs(title = "Aufgabe 4: Durchschnittl. Tageswert pro Wochentag (Gestapelt)",
-        x = "Wochentag",
-        y = "Durchschnittl. Passanten",
-        fill = "Messtellen")
+# kable(jahressumme, digits = 0,
+#       caption = "Jahressumme und Mittelwerte der Passantenanzahl nach Messstelle")
 
 ```
 
@@ -478,20 +454,26 @@ passantenanzahl_stunden_wide
 
 ```{r}
 
-ggplot(data = passantenanzahl_stunden_plot, aes(x = stunde, y = passantenanzahl, color = location_name)) +
+ggplot() +
    # 1. Plot
-  geom_line(linewidth = 1) +  # Zeichnet die Linien
-  geom_point() +              # Fügt die Datenpunkte hinzu 
-   scale_color_manual(values = location_color)+
+  geom_line(data = passantenanzahl_stunden_plot, 
+            aes(x = stunde, y = passantenanzahl, 
+            color = location_name),
+            linewidth = 1) +
+  geom_point(data = passantenanzahl_stunden_plot, 
+             aes(x = stunde, y = passantenanzahl, 
+            color = location_name)) +
 
    # 2. Plot
   geom_line(
     data = avg_stunde_gesamt, 
-    aes(x = stunde, y = durchschnitt_passanten_gesamt, color = NULL),
-    color = "black",
+    aes(x = stunde, y = durchschnitt_passanten_gesamt, colour = NULL, group = 1),
+    color = "black", # <-- DIESE ANWEISUNG HINZUFÜGEN
     linewidth = 1.5,
-    color = "Gesamtdurchschnitt"
+    linetype = "dashed"
   ) + 
+   
+   scale_color_manual(values = globale_farb_palette)+
    
    scale_x_continuous(breaks = seq(0, 23, by = 2))
    
@@ -500,6 +482,128 @@ ggplot(data = passantenanzahl_stunden_plot, aes(x = stunde, y = passantenanzahl,
        y = "Durchschnittliche Passanten pro Stunde",
        color = "Standort")
 ```
+### Extra Plot
+````{r}
+#' [Aufgabe 5: Heatmap des Tagesverlaufs]
+#' @description
+#' [Zeigt die Passantenanzahl als farbige Kacheln.
+#' Ideal, um "Hot Spots" (Peaks) schnell zu identifizieren.]
+library(ggplot2)
+# library(viridis) # Für eine farbenblinde-sichere Palette (optional)
+
+ggplot(passantenanzahl_stunden_plot, 
+       aes(x = stunde, y = location_name, fill = passantenanzahl)) +
+  
+  geom_tile(color = "white") + # 'color="white"' fügt dünne weiße Ränder hinzu
+  
+  # Wir brauchen eine sequentielle Farbskala (kontinuierlich)
+  scale_fill_viridis_c(option = "C") + # "viridis_c" ist eine gute Standard-Palette
+  # Oder: scale_fill_gradient(low = "lightblue", high = "darkblue")
+  
+  scale_x_continuous(breaks = seq(0, 23, by = 2)) +
+  
+  labs(
+    title = "Aufgabe 5: Heatmap des Tagesverlaufs",
+    x = "Uhrzeit (Stunde des Tages)",
+    y = "Messstelle",
+    fill = "Durchschnittl.\nPassanten" # \n für Zeilenumbruch
+  ) +
+  theme_minimal()
+````
+
+````{r}
+#' [Aufgabe 5: (Einzel-) Flächendiagramm für Gesamtsumme]
+#' @description
+#' [Zeigt den Gesamtdurchschnitt über den Tag als gefüllte Fläche.
+#' Betont das Gesamtvolumen.]
+
+ggplot(avg_stunde_gesamt, 
+       aes(x = stunde, y = durchschnitt_passanten_gesamt)) +
+  
+  # Erst die Fläche (mit Transparenz)
+  geom_area(fill = "steelblue", alpha = 0.5) +
+  
+  # Dann die Linie (im selben Farbton, aber dunkler/solide)
+  geom_line(color = "steelblue", linewidth = 1.5) +
+  
+  scale_x_continuous(breaks = seq(0, 23, by = 2)) +
+  
+  labs(
+    title = "Aufgabe 5: Gesamter Tagesverlauf (als Area Chart)",
+    x = "Uhrzeit (Stunde des Tages)",
+    y = "Durchschnittliche Passanten (Alle Standorte)"
+  ) +
+  theme_minimal()
+````
+
+
+````{r}
+#' [3. Multiple Lineare Regression]
+#' @description
+#' [Modelliert einen Standort (Kaiserstraße) als Funktion
+#' der BEIDEN anderen Standorte, um deren gemeinsamen
+#' und individuellen Einfluss zu quantifizieren.]
+#' @param passantenanzahl_stunden_wide [DataFrame] Dein "breiter" DF.
+#'   Benötigt die Spalten 'Kaiserstraße', 'Schönbornstraße', 'Spiegelstraße'.
+#' @return
+#' [lm-Objekt] 'model' enthält das trainierte Regressionsmodell.
+#' [Text-Output] 'summary(model)' zeigt die Ergebnisse (wie in deinem Screenshot).
+
+correlation_data <- passantenanzahl_stunden_wide %>%
+  select(Kaiserstraße, Schönbornstraße, Spiegelstraße)
+
+model <- lm(Kaiserstraße ~ Schönbornstraße + Spiegelstraße, data = correlation_data)
+
+summary(model)
+
+
+
+#' [1. "Intuitiver" Modell-Plot (Dumbbell-Plot)]
+#' @description
+#' [Visualisiert die Güte des Modells, indem TATSÄCHLICHE Werte
+#' (aus der Tabelle) direkt den VORHERGESAGTEN Werten (aus dem Modell)
+#' für jede Stunde gegenübergestellt werden.]
+#' @param model [lm-Objekt] Dein Regressionsmodell ('model')
+#' @param passantenanzahl_stunden_wide [DataFrame] Dein "breiter" DF,
+#'   der 'stunde' und die Prädiktoren (Schönbornstraße etc.) enthält.
+
+model_data_augmented <- augment(model, newdata = passantenanzahl_stunden_wide)
+
+ggplot(model_data_augmented, aes(x = stunde)) +
+  
+  geom_point(
+    aes(y = Kaiserstraße, color = "Tatsächlich"), # y = Deine echte Spalte
+    size = 3
+  ) +
+  
+  geom_point(
+    aes(y = .fitted, color = "Vorhergesagt"), # y = Die Modell-Prognose
+    size = 3, 
+    shape = 4 # 'shape = 4' ist ein 'X'
+  ) +
+  
+  geom_segment(
+    aes(xend = stunde, y = Kaiserstraße, yend = .fitted), 
+    color = "grey", 
+    linewidth = 0.7
+  ) +
+  
+  # --- 4. Manuelle Farb- und Legendensteuerung ---
+  scale_color_manual(
+    name = "Wert-Typ",
+    values = c("Tatsächlich" = "blue", "Vorhergesagt" = "red")
+  ) +
+  
+  scale_x_continuous(breaks = seq(0, 23, by = 2)) +
+  
+  labs(
+    title = "Modell-Visualisierung: Tatsächliche vs. Vorhergesagte Werte",
+    subtitle = "Die gestrichelte Linie zeigt den Modellfehler (Residual) pro Stunde",
+    x = "Stunde (0-23)",
+    y = "Passanten durchnitt je Stunde (Kaiserstraße)"
+  ) +
+  theme_minimal()
+````
 
 # Literatur
 
