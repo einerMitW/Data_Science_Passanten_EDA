@@ -5,6 +5,8 @@ output:
     latex_engine: xelatex
   html_document:
     df_print: paged
+bibliography: bib.bib
+csl: ieee.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -24,16 +26,20 @@ if (knitr::is_html_output()) {
     fig.align = "center",
     fig.width = 8, fig.height = 5,
     out.width = "100%",
-    message = FALSE, warning = FALSE
+    message = FALSE, 
+    warning = FALSE,
+    crop = FALSE
   )
 } else {
   knitr::opts_chunk$set(
     dev       = "cairo_pdf",
     fig.align = "center",
     fig.width = 7, fig.height = 4.5,
-    message = FALSE, warning = FALSE
+    message = FALSE, 
+    warning = FALSE
   )
 }
+
 #Beispiel Doc String zur beschreibung aller der Funktionen
 #' [Kurzer Titel der Funktion, z.B. Addiert zwei Zahlen]
 #' @description
@@ -56,6 +62,7 @@ library(dplyr)
 library(lubridate)
 library(ggplot2)
 library(fmsb)
+library(corrplot)
 ```
 
 ```{r}
@@ -69,8 +76,8 @@ globale_farb_palette = c(
    "Spiegelstraße" = "#2EB865",
   
   # Die Aggregate
-  "Gesamtdurchschnitt" = "#404040", # z.B. Dunkelgrau
-  "Gesamtsumme"        = "#404040"  # z.B. Schwarz
+  "Gesamtdurchschnitt" = "#404040",
+  "Gesamtsumme"        = "#404040"
 )
 ```
 
@@ -78,7 +85,7 @@ globale_farb_palette = c(
 
 ## Import und Datenbereinigung
 
-zuerst importiert man die Daten und zeigt Sie an um zu überprüfen ob der import funktioniert hat.
+Am begin unserer Explorativen Datenanlyse (EDA) steht der Import der Rohdaten.
 
 ```{r}
 passanten_raw <- read_csv2("Datensatz/passanten_wuerzburg.csv")
@@ -98,70 +105,48 @@ passanten <- passanten %>%
   filter(jahr != 2023)
 ```
 
-Nun besitzt man die Daten als Dataframe. Um mit ihnen sinvolle, descriptive oder weiterführend eine Explorative Datenanalyse durchzuführen sollten die Daten zuerst bereinigt werden. Als nächstes prüfen wir ob die Spalentnamen Aussagekräfig sind und ändern sie ab falls notwendig
+Nun besitzt man die Daten als Dataframe "passanten" und zur refferenz als "passanten_raw". Dabei wurde der Dataframe passanten bereits in ein tibbel Format überführt (eine moderner Dataframe) und bereits angepasst. So wurden weitere spalten zum Dataframe hinzugefügt die den umgang mit den Daten später erleichtern z.B: ist nun jede woche über einen Index klar abfragbar. Auch wurden alle Daten aussortiert die nicht aus dem Jahr 2024 Stammen. Um nun eine sinvolle, descriptive oder weiterführend Explorative Datenanalyse durchzuführen sollten die Daten zuerst bereinigt werden. Als nächstes benennen wir die Spaltennamen in Snacke-Case um.
 
 ```{r}
-#Formatieren Spalten Namen
 passanten <- clean_names(passanten)
 ```
 
-Somit können wir nun leer Spalten entfernen und nachsehen wie vollständig die Daten sind.
+Anschließend wird die Anzahl an lehren fledern in den Spalten gezählt.
 
 ```{r}
-#Aufzählung der NA nach Spalte
-colSums(is.na(passanten))
+kable(colSums(is.na(passanten)), digits = 0, caption = "Summe aller NA werte pro Spalte")
 ```
 
-Zum Schluss erhalten wir eine übersicht über die Daten
+Es lässt sich entnehmen, das Wetter und temperatur jewails 112 NA einträge haben. Dies kann diverse gründe haben ist aber nicht relevant im moment. Nun weiß man, dass der Datensatz intakt ist und keine fehlenden Daten in wichtigen Spalten wie: zeitstempel und passanten vorliegen. Nun haben wir einen Datensatz mit dem man eine EDA durchführen kann.
 
-```{r}
-skim(passanten)
-```
+Die folgende Beschreibung gibt bereits einen guten überblick über die Daten und wie sie erfasst werden.
 
 ## Aufgabe 1
 
 ## Beschreibung der Daten
 
-Der Datensatz besteht aus 26015 Zeile und 14 Spalten.Die in den Spalten aufgezeichneten werte sind:
+Der Datensatz enthält daten zu einer Passantenzählung in der Nürnberger Innenstadt, aus dem Jahr 2024 Die wichtigste Spalte ist hierbei die Anzahl der Passanten welche in passanten gemessen wird. Dabei wird die Anzahl der Passanten mit jewails eine Zeitstempel und weiteren Metadaten wie: Temperatur, Ort der Aufzeichnung und Koordinaten des Ortes Zeilenweise angegeben. Man kann entnehmen, dass jede Stunde eine Aufzeichnung pro Location stattfindet.
 
 ```{r}
-skim(passanten)
+kable(skim(passanten), digits = 0, caption = "Skim überblick der Daten pro Spalte")
 ```
 
-Die interessantest Variable ist hierbei die anzahl der Passanten. Dabei werden hir die anzahl der Passanten mit jewails eine Zeitstempel und weiteren Metadaten wie: Temperatur, Ort der Aufzeichnung und Koordinaten des Ortes Zeilenweise angegeben. Die Zeitstempel sind dabei Stündlich für jede der drei Messtationen angegeben.
-
-```{r}
-table(passanten$location_name)
-```
-
-Somit kann man davon ausgehen das die anzahl der Passanten der anzahl der Passanten entspricht die inerhalb einer Stunde durch die Messtation erfasst wurden. Die Metadaten dienen dann zur Interpretation der Hauptdaten.
+Der Datensatz besteht aus 26015 Zeile und 14 Spalten von denen 8 numerische, eine POSIXct und 4 Zeichenketten als Datentypen enthalten. Die Vollständigkeit ist bei allen auser den bereits beschriebenen Spalten gegeben. Ebenfalls ist zu erkennen, dass man mit 366 Tagen, 52 Wochen und 12 Monaten ein vollständig abgebildetes jahr hat. Auch zu erkennen ist das es sich durch die gesamtzahl von 366 Tagen um ein Schaltjahr handeln muss.
 
 ### Erhebung
 
-Die Daten stamen von zählstationen an verschiedenen Punken aus der Nürnberger Innenstadt. Mit hilfe von Laserschranken zählen diese die Anzahl der Passanten welche gerade die Messtation Queren. Durch das Messen mit meheren Laserschranken pro Messtation kann auch die Geh-Richtung des Passanten bestimmt werden. Zur konsistenz der Daten wird vermerkt: "Nach Herstellerangabe kann mit der verwendeten Technik bis zu einem Durchfluss von ca. 500 Personen pro Minute eine Zählgenauigkeit von 99% erreicht werden." vgl. Methodik_hystreet.com. Dabei ist zu beachten, dass eine Zählstation eine Straße bis Maximal 32m Breite abdecken kann. Die Erheber der daten versichern jedoch, dass "Bei den veröffentlichten Daten handelt es sich immer um die Passantenfrequenz der gesamten Straßenbreite (außer es ist explizit anders angegeben)."
+Die Daten stamen von zählstationen an verschiedenen Punken aus der Nürnberger Innenstadt. Mit hilfe von Laserschranken zählen diese die Anzahl der Passanten welche gerade die Messtation Queren. Durch das Messen mit meheren Laserschranken pro Messtation kann auch die Geh-Richtung des Passanten bestimmt werden [@methodik]. Zur konsistenz der Daten wird vermerkt: "Nach Herstellerangabe kann mit der verwendeten Technik bis zu einem Durchfluss von ca. 500 Personen pro Minute eine Zählgenauigkeit von 99% erreicht werden." vgl. [@methodik]. Dabei ist zu beachten, dass eine Zählstation eine Straße bis Maximal 32m Breite abdecken kann. Die Erheber der daten versichern jedoch, dass "Bei den veröffentlichten Daten handelt es sich immer um die Passantenfrequenz der gesamten Straßenbreite (außer es ist explizit anders angegeben)." vgl. [@methodik].
 
 ### Standorte
 
 ```{r}
-anzahl_messpunkte_df <- passanten %>%
-  summarise(
-    Anzahl_Locations = n_distinct(location_name),
-    Anzahl_GeoPunkte = n_distinct(geo_punkt)
-  )
-
-werte_messpunkte_df <- passanten %>%
-   summarise(
-      Locations  = unique(location_name),
-      Geo_Punkte  = unique(geo_punkt)
-   )
-
-anzahl_messpunkte_df
-werte_messpunkte_df
+kable(table(passanten$location_name), digits = 0, caption = "Auflistung aller einzigartigen Location werte und wie of diese vorkommen")
+kable(table(passanten$geo_punkt), digits = 0, caption = "Auflistung aller einzigartigen Geo Punkte und wie of diese vorkommen")
 ```
 
-Der Datenstatz enthält Koordinaten in der Spalte geo_punkt und die orte der Messtationen in der Spalte location_name. Wenn man sich anschaut wie of eine einzelner Standort vorkommt sieht man, dass es jewail 3 Einzelne Standorte gibt und dazu passend die 3 Standorte in Koordinatenform. Die Summen (Wie oft ein Einzelner eintrag vorkommt) ist ebenfalls gleich. Somit ist eine eindeutige zuordung der Standorte zu den Koordinaten möglich. Gleichzeit können wir sicher sein das keine Falschen Standorte oder Koordinaten vorliegen und das jeder Standort auch mit den Korrekten Korrdinaten versehen sind.Wenn man nun die Koordinaten auf einer Karte anzeigen Lässt erhält man folgendes Bild.
+Wenn man angegebenen Koordinaten und Messtellen anschaut sieht man, dass es jewails drei unterschiedliche werte in diesen Spalten gibt. Entscheident ist nun die anzahl der dopplungen dieser werte. Bei genauerer betrachtung sieht man, das die jewailigen dopplungen der menge: location und Geo Punkt gleich sind. Damit kann man davon ausgehen, das jede Location einer eindeutigen Koordinate anhand der anzahl der Dopplungen zugeordnet werden kann. Wenn man nun die Punkte auf einer Karte einträgt erhält man folgende Übersicht:
 
-```{r bild-einfuegen, echo=FALSE, out.width="50%", fig.cap="Hier steht die Bildunterschrift."}
+```{r bild-einfuegen, echo=FALSE, out.width="50%", fig.cap="Markierte Standorte der Messtationen in der Nürnberger Innenstadt"}
 # echo=FALSE versteckt den R-Code im finalen Dokument
 # out.width="50%" setzt die Breite
 # fig.cap="..." fügt eine Unterschrift hinzu
@@ -169,7 +154,16 @@ Der Datenstatz enthält Koordinaten in der Spalte geo_punkt und die orte der Mes
 knitr::include_graphics("Bilder/wuerzburg_stadtplan_messtationen.png")
 ```
 
-Man kann sehen, das die Stationen direkt in der Innenstad stationiert sind. Dabei ist jede Station in der Nähe einer Sehenswürdigkeit bzw. Öffentlichen Gebäude. Die Messtation Schönbornstraße befindet sich nah an der Marienkapelle, die Messtation Spiegelstraße auf dem weg zum Hofgarten und die Messtation Kaiserstraße in der nähe zum Hauptbahnhof. Dabei sind alle diese Straßen Hauptverkehrsstraßen auf welchen man mit gleichmäsiger auslastung rechnen kann. Das Dreiecksmuster welche die Stationen Aufspannen bilden somit eine Art Transitstrecke zwischen: Hauptbahnhof -\> Hofgarten -\> Marienkapelle -\> Hauptbahnhof.
+Die Koordinaten Stimmen mit der Jewailigen Straße und dem Name der Messtation überein. Man kann sehen, das die Stationen direkt in der Innenstad plaziert sind. Dabei ist jede Station in der Nähe einer Sehenswürdigkeit bzw. Öffentlichen Gebäude.
+
+Die Messtation Schönbornstraße befindet sich nah an der Marienkapelle, die Messtation Spiegelstraße auf dem Weg zum Hofgarten und die Messtation Kaiserstraße ist in der nähe des Hauptbahnhof. Alle diese Straßen Hauptverkehrsstraßen auf denen mit vielen Passanten zu rechnen ist. Das Dreiecksmuster welche die Stationen Aufspannen bilden somit eine Art Transitstrecke zwischen: Hauptbahnhof -\> Hofgarten -\> Marienkapelle -\> Hauptbahnhof.
+
+##Leitfragen
+<!-- Eventuelles Aufstellen von Leitfragen Für die Analyse-->
+Nach der Grundlegenden Beschreibung der Daten und einer einführung in den Datensatz sowie seinen Kontext folgen Leitfragen welche helfen die EDA zu leiten.
+- Gibt es besondere Ereignisse in der Würzburger Innenstad welche erkennbar sind?
+- Was ist die beliebteste Region in der Innenstad?
+- Woher kommt die beliebtheit? (Attraktionen, Wichtiger Teil des Altags, Veranstaltungsorte, ...)
 
 ## Aufgabe 2
 
@@ -197,7 +191,7 @@ aggregiert_jahressume_pro_location <- passanten %>%
     durchschnitt_pro_tag = passanten_jahr_summe / anzahl_tage_erfasst,
     
     # Mittelwert pro Stunde
-    durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
+    durchschnitt_pro_stunde = durchschnitt_pro_tag / 24
   )
 
 # --- 2. Analyse aggregiert (insgesamt) ---
@@ -223,13 +217,18 @@ passanten_insgesamt <- passanten %>%
     durchschnitt_pro_tag = passanten_jahr_summe / anzahl_tage_erfasst,
     
     # 5. Mittelwert pro Stunde (Gesamt)
-    durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
+    durchschnitt_pro_stunde = durchschnitt_pro_tag / 24
   )
 
 kable(aggregiert_jahressume_pro_location, digits = 0, caption = "Jahressumme und Mittelwerte der Passantenanzahl nach Messstelle")
+kable(passanten_insgesamt, digits = 0, caption = "Jahressumme der Passantenanzahl")
 
-passanten_insgesamt
 ```
+
+Bereits durch die Einfache berechung der Mittelwerte pro Jahr, Monat, woche und Tag lässt sich festhalten, dass die Schönbornstraße die meiste Auslastung, mit fast 10 Millionen Passanten 2024 erhalten hat. Mit 21864318 Passanten die 2024 insgesammt gezählt wurden stellt die Schönbornstraße somit fast die Hälfte des gesamten Passanten verkehr. Den Daten nach ordnet sich die Kaiserstraße als zweit und die Spiegelstraße als am wenigsten ausgelastete Sraße an. Ebenfalls auffällig ist, dass die Schönbornstraße eine fast doppelt so hohe auslastung wie die Spiegelstraße hat. Somit ist hier eine ungeliche aufteilung der gesamtauslastung festzustellen.
+
+
+Einfügen Interpretation der Lage und der Verbindungen die die Staßen aufspannen
 
 ## Aufgabe 3
 
@@ -253,7 +252,7 @@ summe_monat <- passanten %>%
    mutate(Gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE)) %>%
    arrange(monat)
 
-summe_monat
+kable(summe_monat, digits = 0, caption = "Summe aller Passanten pro Monat und Sraße")
 
 #' [long plot format wandlung]
 #' @description
@@ -268,9 +267,8 @@ mittelwert_monat_plot <- summe_monat %>%
                 names_to = "location_name",
                 values_to = "gesamtsumme")
 ```
-
 ```{r}
-ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = location_name)) +
+plot_aufgabe3 <- ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = location_name)) +
   geom_line(linewidth = 1) +  # Zeichnet die Linien
   geom_point() +              # Fügt die Datenpunkte hinzu 
    scale_color_manual(values = globale_farb_palette)+
@@ -281,7 +279,16 @@ ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = loc
        x = "Monat",
        y = "Summe",
        color = "Standort")
+plot_aufgabe3
 ```
+Das Erstellte Diagramm bestätigt das aus Aufgabe2 bereits beschriebene Muster. Die Auslastung der Schönbornstraße ist konstant am höchsten gefolgt von der Kaiserstraße und der Spiegelstraße. Dise Reihenfolge ist über das Gesamte Jahr erkennbar was darauf schließen lässt das diese Auslastung nicht durch events oder ausergewöhnliche ereignisse, sondern eher den Alltag in der Nürnberger Innenstadt darstellt. 
+In der Gesamtsummen kann man einen Anstieg ab April erkennen. Dies könnte auf den Beginn des Frühlings zurückzuführen sein.
+
+Im September und Oktober scheinen einige Events die Anzahl der Passanten in der Innenstad erhöht zu habe. Das Liniendiagramm zeigt entsprechende ausreißer im September in der Gesamtsumme aber auch an den Jewailigen Stationen. Grund für die erhöhung von September auf Oktober sind mehrere Veranstaltungen. Zum einen das "Würzburger Stadfest" vom 14-15.Sep 2024 und die Würzburger Weinparade vom 29 August bis 8. September.Daraus ergibt sich er Anstig in der Gesamtsumme von ca 500.000 Passanten. Speziell auf der Kaiserstraße und Scönbornstraße zeigt das Liniendiagrammist ein markanter anstig der Gesamtzahl pro Messtation. Hierzu betrachten wir den Ort an dem das Stadfest stattfand.
+Zum Stadfest ist zu sagen, das es eine dezentrale veranstaltung ist bei der "sich fast die gesamte Innenstadt in eine Vergnügungsmeile mit mehreren Bühnen, einem vielfältigen Programm" vgl. [@erlebenStadtfestWuerzburg20252025]. Mit dem Fehlenden Anstieg der Passantenzahl trifft die beschreibung "fast die gesamte Innenstad" sehr genau auf die tatsächlichen Daten zu. Somit trägt das Stadfest zur erhöhung der Passantenzahl bei ist aber nicht der grund für den erkennbaren anstieg auf der Kaiser und Schönborstraße.
+Die Weinparade hingegen fand für einen Längeren Zeitraum exklusiv auf und um den Unteren markplatz bei der Marienkapelle, in direkter nachberschaft zur Schönbornstraße statt [@weinparadenwirtFest]. Da die Kaiserstraße eine direkte verbindung von Haupbahnhof und Marienkapelle darstellt lässt sich so der explizite ansieg der Passanten für diesen Zeitraum erklären.
+
+Im Dezember gab es weitere veranstaltungen in der Innenstad. Hiebei zeigt das Liniendiagramm eine Anstieg in der Gesamtsumme aber auch auf der Schönborn und Spiegelstraße.Die Erklärung hierführ ist der Weihnachtsmarkt vom ende November bis zum 23.Dezember 2024[@krausIst2024Auf2024]. Veranstaltungsort ist hier ebenfalls der Obere und Untere Marktplatz und die Schönbornstraße, weshalb diese den höchsten anstieg verzeichnet.
 
 ## Aufgabe 4
 
@@ -353,7 +360,7 @@ durchschnittlicher_tageswert_location_wide <- durchschnittlicher_tageswert_locat
       values_from = durchschnitt_wochentag_location
    ) %>% 
    left_join(durchschnittlicher_tageswert_gesamt,by = "wochentag")
-durchschnittlicher_tageswert_location_wide
+kable(durchschnittlicher_tageswert_location_wide, digits = 0, caption = "Durschnittlicher Tageswert pro Location")
 ```
 
 ```{r}
@@ -395,6 +402,42 @@ plot_aufgabe4
 #       caption = "Jahressumme und Mittelwerte der Passantenanzahl nach Messstelle")
 
 ```
+Das Diagramm beschreibt die Durschnittliche Auslastung pro Tag, gegliedert nach dem Gesamtdurschnitt und den einzelnen Locations. Auch in der reingezoomten perspektive auf die Jahresdurschnitte auf den Wochentagen bleibt die Erkentniss aus Aufgabe 2 bestehen. Die Rangliste der der höchsten auslastung beginnt erneut mit der Schönbornstraße, gefolgt von der Kaiser und Spiegelstraße.
+
+Die Graphik bestätigt den normalen Wochenrythmus. Sichtbar wird das an den Gelichbleiben Durchschnitten von Montag bis Donnerstag gefolgt von dem Anstieg an Freitag und Samstag und wenige Passanten am Sonntag. Ein Begründung für diesen Wochenrythmus ist Tägliche Geschäft in der Arbeitswoche gefolgt vom Wochenende an dem sich mehr Leute in der Innenstad aufhalten. Da am Sonntag viele Geschäfte geschlossen haben ist die Innenstad auch nicht so stark besucht. Bemerkenswert ist hier die gleichmäsige verteilung. Steigt der Gesamtdurchschnitt so steigt auch der durchschnitt jeder einzelenen Messtation. Das Spricht für eine gewisse Korrelation zwischen den Auslastungen der eizelnen Messtationen.
+
+````{r}
+#' [1. Datenaufbereitung für Korrelation (Aufgabe 4)]
+#' @description
+#' [Erstellt die "breite" Tabelle (7 Zeilen x 3 Spalten),
+#' die für die Korrelationsanalyse benötigt wird.]
+#' @param durchschnittlicher_tageswert_location_plot [DataFrame] Dein "langer" DF
+#' @return
+#' [DataFrame] 'wide_data_task4'
+wide_data_task4 <- durchschnittlicher_tageswert_location_plot %>%
+  pivot_wider(
+    names_from = location_name,
+    values_from = durchschnitt_wochentag_location
+  )
+
+
+
+#' [2. Korrelationsmatrix (Der "Beweis")]
+#' @description
+#' [Berechnet die Korrelationskoeffizienten zwischen den
+#' 7-Tage-Mustern der Standorte.]
+#' @param wide_data_task4 [DataFrame] Der breite DF von oben
+correlation_data_task4 <- wide_data_task4 %>%
+  select(Kaiserstraße, Schönbornstraße, Spiegelstraße)
+
+cor_matrix_task4 <- cor(correlation_data_task4)
+
+#' [3. Correlogramm (Der "visuelle Beweis")]
+#' @description
+#' [Visualisiert die Korrelationsmatrix als Heatmap.]
+corrplot(cor_matrix_task4, type = "lower", method = "color")
+````
+Über die Berechnung der Korrelation erkennt man das klar den zusammenhang der Messtationen untereinander wobei Kaiser und Spieglstaße enger zusammenhängen als die jewailige straße mit der Schönbornestraße. Das habe die Schönbornstraße weiter hervor wenn auch nicht sehr stark.
 
 ## Aufgabe 5
 
@@ -482,8 +525,10 @@ ggplot() +
        y = "Durchschnittliche Passanten pro Stunde",
        color = "Standort")
 ```
+
 ### Extra Plot
-````{r}
+
+```{r}
 #' [Aufgabe 5: Heatmap des Tagesverlaufs]
 #' @description
 #' [Zeigt die Passantenanzahl als farbige Kacheln.
@@ -509,9 +554,9 @@ ggplot(passantenanzahl_stunden_plot,
     fill = "Durchschnittl.\nPassanten" # \n für Zeilenumbruch
   ) +
   theme_minimal()
-````
+```
 
-````{r}
+```{r}
 #' [Aufgabe 5: (Einzel-) Flächendiagramm für Gesamtsumme]
 #' @description
 #' [Zeigt den Gesamtdurchschnitt über den Tag als gefüllte Fläche.
@@ -534,10 +579,9 @@ ggplot(avg_stunde_gesamt,
     y = "Durchschnittliche Passanten (Alle Standorte)"
   ) +
   theme_minimal()
-````
+```
 
-
-````{r}
+```{r}
 #' [3. Multiple Lineare Regression]
 #' @description
 #' [Modelliert einen Standort (Kaiserstraße) als Funktion
@@ -603,8 +647,65 @@ ggplot(model_data_augmented, aes(x = stunde)) +
     y = "Passanten durchnitt je Stunde (Kaiserstraße)"
   ) +
   theme_minimal()
+```
+````{r}
+library(lubridate) # Falls noch nicht geladen
+
+#' [Monat extrahieren]
+#' @description
+#' [Stellt sicher, dass die 'monat'-Spalte (numerisch 1-12)
+#' für die Aggregation verfügbar ist.]
+passanten_mit_monat <- passanten %>%
+  mutate(
+    # (Stelle sicher, dass 'zeitstempel_dt' existiert, 
+    # siehe Code von Aufgabe 4/5 'Datum extrahieren')
+    monat = month(zeitstempel, label = FALSE) 
+  )
+
+#' [Stündl. Mittelwert pro Monat (Gegliedert)]
+#' @description
+#' [Berechnet den durchschnittlichen Passantenwert PRO STUNDE
+#' für jeden Monat (1-12) und jede Messstelle.
+#' (Logik von A5, angewandt auf A3)]
+avg_hourly_by_month_plot <- passanten_mit_monat %>%
+   group_by(monat, location_name) %>%
+   summarise(
+      # Das ist die Logik aus Aufgabe 5: mean(passanten)
+      durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
+      ) %>%
+   ungroup()
+
+#' [Plot: Jahresverlauf der stündl. Mittelwerte]
+#' @description
+#' [Zeigt den Jahresverlauf der durchschnittlichen stündlichen 
+#' Auslastung pro Standort.]
+ggplot(avg_hourly_by_month_plot, 
+       aes(x = monat, y = durchschnitt_pro_stunde, color = location_name)) +
+  
+  geom_line(linewidth = 1.2) +
+  geom_point(size = 2) +
+  
+  # Verwende deine globale Palette
+  scale_color_manual(values = globale_farb_palette) +
+  
+  # Zeige alle 12 Monate auf der Achse
+  scale_x_continuous(breaks = 1:12) +
+  
+  labs(
+    title = "Jahresverlauf: Durchschnittliche Stündliche Auslastung",
+    subtitle = "Zeigt den 'typischen' Stundenwert pro Monat",
+    x = "Monat (1-12)",
+    y = "Durchschnittliche Passanten pro Stunde",
+    color = "Standort"
+  ) +
+  theme_minimal()
+````
+````{r}
+
 ````
 
-# Literatur
 
-<https://studyflix.de/statistik/mittelwert-6133>
+## Fazit
+
+
+# Literatur
