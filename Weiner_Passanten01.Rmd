@@ -158,12 +158,7 @@ Die Koordinaten Stimmen mit der Jewailigen Straße und dem Name der Messtation �
 
 Die Messtation Schönbornstraße befindet sich nah an der Marienkapelle, die Messtation Spiegelstraße auf dem Weg zum Hofgarten und die Messtation Kaiserstraße ist in der nähe des Hauptbahnhof. Alle diese Straßen Hauptverkehrsstraßen auf denen mit vielen Passanten zu rechnen ist. Das Dreiecksmuster welche die Stationen Aufspannen bilden somit eine Art Transitstrecke zwischen: Hauptbahnhof -\> Hofgarten -\> Marienkapelle -\> Hauptbahnhof.
 
-##Leitfragen
-<!-- Eventuelles Aufstellen von Leitfragen Für die Analyse-->
-Nach der Grundlegenden Beschreibung der Daten und einer einführung in den Datensatz sowie seinen Kontext folgen Leitfragen welche helfen die EDA zu leiten.
-- Gibt es besondere Ereignisse in der Würzburger Innenstad welche erkennbar sind?
-- Was ist die beliebteste Region in der Innenstad?
-- Woher kommt die beliebtheit? (Attraktionen, Wichtiger Teil des Altags, Veranstaltungsorte, ...)
+##Leitfragen <!-- Eventuelles Aufstellen von Leitfragen Für die Analyse--> Nach der Grundlegenden Beschreibung der Daten und einer einführung in den Datensatz sowie seinen Kontext folgen Leitfragen welche helfen die EDA zu leiten. - Gibt es besondere Ereignisse in der Würzburger Innenstad welche erkennbar sind? - Was ist die beliebteste Region in der Innenstad? - Woher kommt die beliebtheit? (Attraktionen, Wichtiger Teil des Altags, Veranstaltungsorte, ...)
 
 ## Aufgabe 2
 
@@ -227,7 +222,6 @@ kable(passanten_insgesamt, digits = 0, caption = "Jahressumme der Passantenanzah
 
 Bereits durch die Einfache berechung der Mittelwerte pro Jahr, Monat, woche und Tag lässt sich festhalten, dass die Schönbornstraße die meiste Auslastung, mit fast 10 Millionen Passanten 2024 erhalten hat. Mit 21864318 Passanten die 2024 insgesammt gezählt wurden stellt die Schönbornstraße somit fast die Hälfte des gesamten Passanten verkehr. Den Daten nach ordnet sich die Kaiserstraße als zweit und die Spiegelstraße als am wenigsten ausgelastete Sraße an. Ebenfalls auffällig ist, dass die Schönbornstraße eine fast doppelt so hohe auslastung wie die Spiegelstraße hat. Somit ist hier eine ungeliche aufteilung der gesamtauslastung festzustellen.
 
-
 Einfügen Interpretation der Lage und der Verbindungen die die Staßen aufspannen
 
 ## Aufgabe 3
@@ -267,6 +261,7 @@ mittelwert_monat_plot <- summe_monat %>%
                 names_to = "location_name",
                 values_to = "gesamtsumme")
 ```
+
 ```{r}
 plot_aufgabe3 <- ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamtsumme, color = location_name)) +
   geom_line(linewidth = 1) +  # Zeichnet die Linien
@@ -281,12 +276,10 @@ plot_aufgabe3 <- ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamts
        color = "Standort")
 plot_aufgabe3
 ```
-Das Erstellte Diagramm bestätigt das aus Aufgabe2 bereits beschriebene Muster. Die Auslastung der Schönbornstraße ist konstant am höchsten gefolgt von der Kaiserstraße und der Spiegelstraße. Dise Reihenfolge ist über das Gesamte Jahr erkennbar was darauf schließen lässt das diese Auslastung nicht durch events oder ausergewöhnliche ereignisse, sondern eher den Alltag in der Nürnberger Innenstadt darstellt. 
-In der Gesamtsummen kann man einen Anstieg ab April erkennen. Dies könnte auf den Beginn des Frühlings zurückzuführen sein.
 
-Im September und Oktober scheinen einige Events die Anzahl der Passanten in der Innenstad erhöht zu habe. Das Liniendiagramm zeigt entsprechende ausreißer im September in der Gesamtsumme aber auch an den Jewailigen Stationen. Grund für die erhöhung von September auf Oktober sind mehrere Veranstaltungen. Zum einen das "Würzburger Stadfest" vom 14-15.Sep 2024 und die Würzburger Weinparade vom 29 August bis 8. September.Daraus ergibt sich er Anstig in der Gesamtsumme von ca 500.000 Passanten. Speziell auf der Kaiserstraße und Scönbornstraße zeigt das Liniendiagrammist ein markanter anstig der Gesamtzahl pro Messtation. Hierzu betrachten wir den Ort an dem das Stadfest stattfand.
-Zum Stadfest ist zu sagen, das es eine dezentrale veranstaltung ist bei der "sich fast die gesamte Innenstadt in eine Vergnügungsmeile mit mehreren Bühnen, einem vielfältigen Programm" vgl. [@erlebenStadtfestWuerzburg20252025]. Mit dem Fehlenden Anstieg der Passantenzahl trifft die beschreibung "fast die gesamte Innenstad" sehr genau auf die tatsächlichen Daten zu. Somit trägt das Stadfest zur erhöhung der Passantenzahl bei ist aber nicht der grund für den erkennbaren anstieg auf der Kaiser und Schönborstraße.
-Die Weinparade hingegen fand für einen Längeren Zeitraum exklusiv auf und um den Unteren markplatz bei der Marienkapelle, in direkter nachberschaft zur Schönbornstraße statt [@weinparadenwirtFest]. Da die Kaiserstraße eine direkte verbindung von Haupbahnhof und Marienkapelle darstellt lässt sich so der explizite ansieg der Passanten für diesen Zeitraum erklären.
+Das Erstellte Diagramm bestätigt das aus Aufgabe2 bereits beschriebene Muster. Die Auslastung der Schönbornstraße ist konstant am höchsten gefolgt von der Kaiserstraße und der Spiegelstraße. Dise Reihenfolge ist über das Gesamte Jahr erkennbar was darauf schließen lässt das diese Auslastung nicht durch events oder ausergewöhnliche ereignisse, sondern eher den Alltag in der Nürnberger Innenstadt darstellt. In der Gesamtsummen kann man einen Anstieg ab April erkennen. Dies könnte auf den Beginn des Frühlings zurückzuführen sein.
+
+Im September und Oktober scheinen einige Events die Anzahl der Passanten in der Innenstad erhöht zu habe. Das Liniendiagramm zeigt entsprechende ausreißer im September in der Gesamtsumme aber auch an den Jewailigen Stationen. Grund für die erhöhung von September auf Oktober sind mehrere Veranstaltungen. Zum einen das "Würzburger Stadfest" vom 14-15.Sep 2024 und die Würzburger Weinparade vom 29 August bis 8. September.Daraus ergibt sich er Anstig in der Gesamtsumme von ca 500.000 Passanten. Speziell auf der Kaiserstraße und Scönbornstraße zeigt das Liniendiagrammist ein markanter anstig der Gesamtzahl pro Messtation. Hierzu betrachten wir den Ort an dem das Stadfest stattfand. Zum Stadfest ist zu sagen, das es eine dezentrale veranstaltung ist bei der "sich fast die gesamte Innenstadt in eine Vergnügungsmeile mit mehreren Bühnen, einem vielfältigen Programm" vgl. [@erlebenStadtfestWuerzburg20252025]. Mit dem Fehlenden Anstieg der Passantenzahl trifft die beschreibung "fast die gesamte Innenstad" sehr genau auf die tatsächlichen Daten zu. Somit trägt das Stadfest zur erhöhung der Passantenzahl bei ist aber nicht der grund für den erkennbaren anstieg auf der Kaiser und Schönborstraße. Die Weinparade hingegen fand für einen Längeren Zeitraum exklusiv auf und um den Unteren markplatz bei der Marienkapelle, in direkter nachberschaft zur Schönbornstraße statt [@weinparadenwirtFest]. Da die Kaiserstraße eine direkte verbindung von Haupbahnhof und Marienkapelle darstellt lässt sich so der explizite ansieg der Passanten für diesen Zeitraum erklären.
 
 Im Dezember gab es weitere veranstaltungen in der Innenstad. Hiebei zeigt das Liniendiagramm eine Anstieg in der Gesamtsumme aber auch auf der Schönborn und Spiegelstraße.Die Erklärung hierführ ist der Weihnachtsmarkt vom ende November bis zum 23.Dezember 2024[@krausIst2024Auf2024]. Veranstaltungsort ist hier ebenfalls der Obere und Untere Marktplatz und die Schönbornstraße, weshalb diese den höchsten anstieg verzeichnet.
 
@@ -313,13 +306,15 @@ gesamttagessumme <- passanten %>%
     .groups = 'drop' )
 
 
-#' [durschnitt tageswert]
+#' [Mittlerer Tageswert (Gegliedert, für Plot)]
 #' @description
-#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
-#'
-#' @param tagessumme
+#' Berechnet den durchschnittlichen TAGESwert (mean(Tagessumme))
+#' für jeden Wochentag, aufgeschlüsselt nach 'location_name'.
+#' Sortiert zudem die Wochentage (als Faktor) in die korrekte Reihenfolge.
+#' @param tagessumme [DataFrame] Der DF 'tagessumme' (Ergebnis von Block 1).
 #' @return
-#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
+#' [DataFrame] 'durchschnittlicher_tageswert_location_plot' (langes Format).
+#'   Enthält den mittleren Tageswert pro Wochentag und Location (21 Zeilen).
 durchschnittlicher_tageswert_location_plot <- tagessumme %>%
    mutate(
     wochentag = factor(wochentag, levels = tage_vektor)
@@ -331,12 +326,15 @@ durchschnittlicher_tageswert_location_plot <- tagessumme %>%
    ungroup()
 
 
-#' [durschnitt tageswert]
+#' [Mittlerer Tageswert (Gesamt)]
 #' @description
-#' [die Funktion gruppiert nach wochentag und location und berechnet dann den durchschnitt. gleichzeitig sortiert sie die wochentage in der korrenkten wöchentlichen anordungn]
-#' @param tagessumme
+#' Berechnet den durchschnittlichen GESAMT-Tageswert (mean(Tagessumme_Gesamt))
+#' für jeden Wochentag (summiert über alle Standorte).
+#' Sortiert zudem die Wochentage (als Faktor) in die korrekte Reihenfolge.
+#' @param gesamttagessumme [DataFrame] Der DF 'gesamttagessumme' (Ergebnis von Block 2).
 #' @return
-#' [df durchnittlicher_tageswert der Passanten pro Messtation und Wochentag in long format]
+#' [DataFrame] 'durchschnittlicher_tageswert_gesamt' (langes Format).
+#'   Enthält den mittleren Gesamt-Tageswert pro Wochentag (7 Zeilen).
 durchschnittlicher_tageswert_gesamt <- gesamttagessumme %>%
    mutate(
     wochentag = factor(wochentag, levels = tage_vektor)
@@ -347,19 +345,22 @@ durchschnittlicher_tageswert_gesamt <- gesamttagessumme %>%
    )%>%
    ungroup()
 
-#' [df in Tabellenformat ]
+#' [Kombinierte Tabelle (Breites Format)]
 #' @description
-#' [Formatiert einen df in eine Aussagekräftige Tabelle]
-#'
-#' @param durschnittlicher_tageswert_plot]
+#' Kombiniert die gegliederten und die gesamten Mittelwerte in einer "breiten" Tabelle.
+#' Diese Tabelle ist ideal für die tabellarische Darstellung in der Analyse.
+#' @param durchschnittlicher_tageswert_location_plot [DataFrame] Der DF aus Block 3.
+#' @param durchschnittlicher_tageswert_gesamt [DataFrame] Der DF aus Block 4.
 #' @return
-#' []
+#' [DataFrame] 'durchschnittlicher_tageswert_location_wide'.
+#'   Enthält 7 Zeilen (pro Wochentag) und Spalten für jeden Standort sowie die Gesamtsumme.
 durchschnittlicher_tageswert_location_wide <- durchschnittlicher_tageswert_location_plot %>%
    pivot_wider(
       names_from = location_name,
       values_from = durchschnitt_wochentag_location
    ) %>% 
    left_join(durchschnittlicher_tageswert_gesamt,by = "wochentag")
+
 kable(durchschnittlicher_tageswert_location_wide, digits = 0, caption = "Durschnittlicher Tageswert pro Location")
 ```
 
@@ -402,11 +403,12 @@ plot_aufgabe4
 #       caption = "Jahressumme und Mittelwerte der Passantenanzahl nach Messstelle")
 
 ```
+
 Das Diagramm beschreibt die Durschnittliche Auslastung pro Tag, gegliedert nach dem Gesamtdurschnitt und den einzelnen Locations. Auch in der reingezoomten perspektive auf die Jahresdurschnitte auf den Wochentagen bleibt die Erkentniss aus Aufgabe 2 bestehen. Die Rangliste der der höchsten auslastung beginnt erneut mit der Schönbornstraße, gefolgt von der Kaiser und Spiegelstraße.
 
 Die Graphik bestätigt den normalen Wochenrythmus. Sichtbar wird das an den Gelichbleiben Durchschnitten von Montag bis Donnerstag gefolgt von dem Anstieg an Freitag und Samstag und wenige Passanten am Sonntag. Ein Begründung für diesen Wochenrythmus ist Tägliche Geschäft in der Arbeitswoche gefolgt vom Wochenende an dem sich mehr Leute in der Innenstad aufhalten. Da am Sonntag viele Geschäfte geschlossen haben ist die Innenstad auch nicht so stark besucht. Bemerkenswert ist hier die gleichmäsige verteilung. Steigt der Gesamtdurchschnitt so steigt auch der durchschnitt jeder einzelenen Messtation. Das Spricht für eine gewisse Korrelation zwischen den Auslastungen der eizelnen Messtationen.
 
-````{r}
+```{r}
 #' [1. Datenaufbereitung für Korrelation (Aufgabe 4)]
 #' @description
 #' [Erstellt die "breite" Tabelle (7 Zeilen x 3 Spalten),
@@ -436,7 +438,8 @@ cor_matrix_task4 <- cor(correlation_data_task4)
 #' @description
 #' [Visualisiert die Korrelationsmatrix als Heatmap.]
 corrplot(cor_matrix_task4, type = "lower", method = "color")
-````
+```
+
 Über die Berechnung der Korrelation erkennt man das klar den zusammenhang der Messtationen untereinander wobei Kaiser und Spieglstaße enger zusammenhängen als die jewailige straße mit der Schönbornestraße. Das habe die Schönbornstraße weiter hervor wenn auch nicht sehr stark.
 
 ## Aufgabe 5
@@ -491,8 +494,7 @@ passantenanzahl_stunden_wide <- passantenanzahl_stunden_plot %>%
       values_from = passantenanzahl
       )%>%
    left_join(avg_stunde_gesamt, by = "stunde")
-passantenanzahl_stunden_wide
-
+kable(passantenanzahl_stunden_wide, digits = 0, caption = "Durchschnittlicher Passantenwert jede Stunde (0-23)")
 ```
 
 ```{r}
@@ -511,7 +513,7 @@ ggplot() +
   geom_line(
     data = avg_stunde_gesamt, 
     aes(x = stunde, y = durchschnitt_passanten_gesamt, colour = NULL, group = 1),
-    color = "black", # <-- DIESE ANWEISUNG HINZUFÜGEN
+    color = "black",
     linewidth = 1.5,
     linetype = "dashed"
   ) + 
@@ -526,9 +528,15 @@ ggplot() +
        color = "Standort")
 ```
 
-### Extra Plot
+Das auf grundlage der Tabelle erstellte Liniendiagramm zeigt den Durchschnitt der Passanten pro Stunde aufgeteilt nach Straßen. Die Gestrichelte linie stellt dabei den durchschnitt der Passanten pro Stunde Insgesamt dar.
 
-```{r}
+Die bereits festgestellt rangliste nach auslastung bestätigt sich auch in dieser Ansicht.
+
+Morgens Pendeln mehr leute über die Kaiserstraße. Das ist im berich zwischen 4 und 7 Uhr auf dem Graphen abzulesen. Die Kaiserstraße liegt dabei deutlich über dem Gesamtdurchschnitt, der Schönberger und Spiegelstraße. Eine begründung ist die Lage der Kaiserstraße. Sie ist die direkte Verbindung vom Hauptbahnhof in die Innenstadt. Da die Anzahl der Werktage die anzahl der Feiertage + Gesetzlich vogegebender Urlaubstage übertrifft kann man davon ausgehen das der Durchschnitt stark durch den morgendlichen verkehr zum Hauptbahnhof beinflusst ist.
+
+Die Kaiserstraße scheint demnach den Gesamtdurchschnitt sehr genau abzubilden. Ablesbar ist dies aus dem Diagramm, da die Kaiserstraße und der gesammtdurchschnitt eien Ähnlichen verlauf haben.  
+
+````{r}
 #' [Aufgabe 5: Heatmap des Tagesverlaufs]
 #' @description
 #' [Zeigt die Passantenanzahl als farbige Kacheln.
@@ -554,32 +562,10 @@ ggplot(passantenanzahl_stunden_plot,
     fill = "Durchschnittl.\nPassanten" # \n für Zeilenumbruch
   ) +
   theme_minimal()
-```
+````
 
-```{r}
-#' [Aufgabe 5: (Einzel-) Flächendiagramm für Gesamtsumme]
-#' @description
-#' [Zeigt den Gesamtdurchschnitt über den Tag als gefüllte Fläche.
-#' Betont das Gesamtvolumen.]
-
-ggplot(avg_stunde_gesamt, 
-       aes(x = stunde, y = durchschnitt_passanten_gesamt)) +
-  
-  # Erst die Fläche (mit Transparenz)
-  geom_area(fill = "steelblue", alpha = 0.5) +
-  
-  # Dann die Linie (im selben Farbton, aber dunkler/solide)
-  geom_line(color = "steelblue", linewidth = 1.5) +
-  
-  scale_x_continuous(breaks = seq(0, 23, by = 2)) +
-  
-  labs(
-    title = "Aufgabe 5: Gesamter Tagesverlauf (als Area Chart)",
-    x = "Uhrzeit (Stunde des Tages)",
-    y = "Durchschnittliche Passanten (Alle Standorte)"
-  ) +
-  theme_minimal()
-```
+## Vorhersagemodell
+Durch die in Aufgabe 4 beschreiben Korrelation zwischen den Straßen in der durchschnittlichen Tageswert stellt sich nun die frage ob man die auslastung einer Straße durch die werte der beiden anderen vorhersagen kann. Aus Aufgabe 5 Wissen wir, das die Kaiserstaße sehr ähnlich zur durchschnittlichen Gesamtauslastung ist. Daher versucht man die Kaiserstraße durch die Spiegel und Schönborstraße vorherzusagen.
 
 ```{r}
 #' [3. Multiple Lineare Regression]
@@ -628,8 +614,8 @@ ggplot(model_data_augmented, aes(x = stunde)) +
   
   geom_segment(
     aes(xend = stunde, y = Kaiserstraße, yend = .fitted), 
-    color = "grey", 
-    linewidth = 0.7
+    color = "green", 
+    linewidth = 1
   ) +
   
   # --- 4. Manuelle Farb- und Legendensteuerung ---
@@ -648,64 +634,7 @@ ggplot(model_data_augmented, aes(x = stunde)) +
   ) +
   theme_minimal()
 ```
-````{r}
-library(lubridate) # Falls noch nicht geladen
-
-#' [Monat extrahieren]
-#' @description
-#' [Stellt sicher, dass die 'monat'-Spalte (numerisch 1-12)
-#' für die Aggregation verfügbar ist.]
-passanten_mit_monat <- passanten %>%
-  mutate(
-    # (Stelle sicher, dass 'zeitstempel_dt' existiert, 
-    # siehe Code von Aufgabe 4/5 'Datum extrahieren')
-    monat = month(zeitstempel, label = FALSE) 
-  )
-
-#' [Stündl. Mittelwert pro Monat (Gegliedert)]
-#' @description
-#' [Berechnet den durchschnittlichen Passantenwert PRO STUNDE
-#' für jeden Monat (1-12) und jede Messstelle.
-#' (Logik von A5, angewandt auf A3)]
-avg_hourly_by_month_plot <- passanten_mit_monat %>%
-   group_by(monat, location_name) %>%
-   summarise(
-      # Das ist die Logik aus Aufgabe 5: mean(passanten)
-      durchschnitt_pro_stunde = mean(passanten, na.rm = TRUE)
-      ) %>%
-   ungroup()
-
-#' [Plot: Jahresverlauf der stündl. Mittelwerte]
-#' @description
-#' [Zeigt den Jahresverlauf der durchschnittlichen stündlichen 
-#' Auslastung pro Standort.]
-ggplot(avg_hourly_by_month_plot, 
-       aes(x = monat, y = durchschnitt_pro_stunde, color = location_name)) +
-  
-  geom_line(linewidth = 1.2) +
-  geom_point(size = 2) +
-  
-  # Verwende deine globale Palette
-  scale_color_manual(values = globale_farb_palette) +
-  
-  # Zeige alle 12 Monate auf der Achse
-  scale_x_continuous(breaks = 1:12) +
-  
-  labs(
-    title = "Jahresverlauf: Durchschnittliche Stündliche Auslastung",
-    subtitle = "Zeigt den 'typischen' Stundenwert pro Monat",
-    x = "Monat (1-12)",
-    y = "Durchschnittliche Passanten pro Stunde",
-    color = "Standort"
-  ) +
-  theme_minimal()
-````
-````{r}
-
-````
-
-
+Die erstellte Lineare Regression
 ## Fazit
-
 
 # Literatur
