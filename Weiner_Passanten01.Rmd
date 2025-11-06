@@ -3,8 +3,10 @@ title: "Weiner_Passanten01"
 output:
   pdf_document:
     latex_engine: xelatex
+    toc: true
   html_document:
     df_print: paged
+    toc: true
 bibliography: bib.bib
 csl: ieee.csl
 ---
@@ -117,21 +119,21 @@ Anschließend wird die Anzahl an leeren Feldern in den Spalten gezählt.
 kable(colSums(is.na(passanten)), digits = 0, caption = "Summe aller NA werte pro Spalte")
 ```
 
-Es lässt sich entnehmen, dass Wetter und Temperatur jeweils 112 NA-Einträge haben. Dies kann diverse Gründe haben, ist aber im Moment nicht relevant. Nun weiß man, dass der Datensatz intakt ist und keine fehlenden Daten in wichtigen Spalten wie `zeitstempel` und `passanten` vorliegen. Nun haben wir einen Datensatz, mit dem man eine EDA durchführen kann.
+Es lässt sich entnehmen, dass Wetter und Temperatur jeweils 112 NA-Einträge haben. Dies kann diverse Gründe haben. Nun weiß man, dass der Datensatz intakt ist und keine fehlenden Daten in wichtigen Spalten wie `zeitstempel` und `passanten` vorliegen. Nun haben wir einen Datensatz, mit dem man eine EDA durchführen kann.
 
 Die folgende Beschreibung gibt bereits einen guten Überblick über die Daten und wie sie erfasst werden.
 
 ## Aufgabe 1
 
-## Beschreibung der Daten
+### Beschreibung des Datensatz
 
 Der Datensatz enthält Daten zu einer Passantenzählung in der Würzburger Innenstadt aus dem Jahr 2024. Die wichtigste Spalte ist hierbei die Anzahl der Passanten, welche in `passanten` gemessen wird. Dabei wird die Anzahl der Passanten mit jeweils einem Zeitstempel und weiteren Metadaten wie Temperatur, Ort der Aufzeichnung und Koordinaten des Ortes zeilenweise angegeben. Man kann entnehmen, dass jede Stunde eine Aufzeichnung pro Location stattfindet.
 
 ```{r}
-kable(skim(passanten), digits = 0, caption = "Skim überblick der Daten pro Spalte")
+skim(passanten)
 ```
 
-Der Datensatz besteht aus 26015 Zeilen und 14 Spalten, von denen 8 numerische, eine POSIXct und 4 Zeichenketten als Datentypen enthalten. Die Vollständigkeit ist bei allen außer den bereits beschriebenen Spalten gegeben. Ebenfalls ist zu erkennen, dass man mit 366 Tagen, 52 Wochen und 12 Monaten ein vollständig abgebildetes Jahr hat. Auch zu erkennen ist, dass es sich durch die Gesamtzahl von 366 Tagen um ein Schaltjahr handeln muss.
+Der Datensatz besteht aus 26015 Zeilen und 13 Spalten, von denen 8 numerische, eine POSIXct und 4 Zeichenketten als Datentypen enthalten. Die Vollständigkeit ist bei allen außer den bereits beschriebenen Spalten gegeben. Ebenfalls ist zu erkennen, dass man mit 366 Tagen, 52 Wochen und 12 Monaten ein vollständig abgebildetes Jahr hat. Auch zu erkennen ist, dass es sich durch die Gesamtzahl von 366 Tagen um ein Schaltjahr handeln muss.
 
 ### Erhebung
 
@@ -246,7 +248,7 @@ summe_monat <- passanten %>%
    mutate(Gesamtsumme = rowSums(across(where(is.numeric)), na.rm = TRUE)) %>%
    arrange(monat)
 
-kable(summe_monat, digits = 0, caption = "Summe aller Passanten pro Monat und Sraße")
+kable(summe_monat, digits = 0, caption = "Summe aller Passanten nach Monat und pro Straße wie über alle Straßen summiert")
 
 #' [long plot format wandlung]
 #' @description
@@ -270,9 +272,10 @@ plot_aufgabe3 <- ggplot(data = mittelwert_monat_plot, aes(x = monat, y = gesamts
   scale_x_continuous(breaks = 1:12, labels = monat_vektor)+
 
   # Titel und Achsenbeschriftungen
-  labs(title = "Summen pro Monat und Straße",
+  labs(title = "Summen nach Monat und pro Straße",
+       subtitle = "Als Liniendiagramm",
        x = "Monat",
-       y = "Summe",
+       y = "Passantenanzahl",
        color = "Standort")
 plot_aufgabe3
 ```
@@ -360,7 +363,7 @@ durchschnittlicher_tageswert_location_wide <- durchschnittlicher_tageswert_locat
       values_from = durchschnitt_wochentag_location
    ) %>% 
    left_join(durchschnittlicher_tageswert_gesamt,by = "wochentag")
-kable(durchschnittlicher_tageswert_location_wide, digits = 0, caption = "Durschnittlicher Tageswert pro Location")
+kable(durchschnittlicher_tageswert_location_wide, digits = 0, caption = "Durschnittlicher Tageswert pro Straße")
 ```
 
 ```{r}
@@ -390,10 +393,10 @@ plot_aufgabe4<- ggplot(
   scale_fill_manual(values = globale_farb_palette) +
   
   labs(
-    title = "Aufgabe 4: Durchschnittl. Tageswert (Gegliedert & Gesamt)",
+    title = "Durchschnittlicher Tageswert (Gegliedert nach Straßen & Gesamt)",
     subtitle = "Als gruppiertes Balkendiagramm",
     x = "Wochentag",
-    y = "Durchschnittlicher Tageswert",
+    y = "Durchschnittlicher Passantenanzahl",
     fill = "Messstelle"
   )
 plot_aufgabe4
@@ -439,7 +442,7 @@ cor_matrix_task4 <- cor(correlation_data_task4)
 corrplot(cor_matrix_task4, type = "lower", method = "color")
 ```
 
-Über die Berechnung der Korrelation erkennt man klar den Zusammenhang der Messstationen untereinander, wobei Kaiser- und Spiegelstraße enger zusammenhängen als die jeweilige Straße mit der Schönbornstraße. Das hebt die Schönbornstraße weiter hervor, wenn auch nicht sehr stark.
+Über die Berechnung der Korrelation erkennt man eine starke korrelation. Ein Wert \>0.5 gilt als starker Zusammenhang. Aus der Korrelationsmatrix lässt sich eine Korrelation \>0.5 für alle Straßen ablesen. Die Kaiser und Spiegelstraße hängen dabei enger zusammen als die jeweilige Straße mit der Schönbornstraße.
 
 ## Aufgabe 5
 
@@ -521,7 +524,8 @@ ggplot() +
    
    scale_x_continuous(breaks = seq(0, 23, by = 2))
    
-  labs(title = "Aufgabe 5: Durchschnittlicher Tagesverlauf (Gegliedert & Gesamt)",
+  labs(title = "Durchschnittlicher Tagesverlauf (Gegliedert nach Straße & Gesamt)",
+       subtitle = "Als Liniendiagramm",
        x = "Uhrzeit (Stunde des Tages)",
        y = "Durchschnittliche Passanten pro Stunde",
        color = "Standort")
@@ -534,8 +538,6 @@ Die bereits festgestellte Rangliste nach Auslastung bestätigt sich auch in dies
 Morgens pendeln mehr Leute über die Kaiserstraße. Das ist im Bereich zwischen 4 und 7 Uhr auf dem Graphen abzulesen. Die Kaiserstraße liegt dabei deutlich über dem Gesamtdurchschnitt, der Schönborn- und Spiegelstraße. Eine Begründung ist die Lage der Kaiserstraße. Sie ist die direkte Verbindung vom Hauptbahnhof in die Innenstadt. Da die Anzahl der Werktage die Anzahl der Feiertage + gesetzlich vorgegebener Urlaubstage übertrifft, kann man davon ausgehen, dass der Durchschnitt stark durch den morgendlichen Verkehr zum Hauptbahnhof beeinflusst ist.
 
 Die Kaiserstraße scheint demnach den Gesamtdurchschnitt sehr genau abzubilden. Ablesbar ist dies aus dem Diagramm, da die Kaiserstraße und der Gesamtdurchschnitt einen ähnlichen Verlauf haben.
-
-### Extra Plot
 
 ```{r}
 #' [Aufgabe 5: Heatmap des Tagesverlaufs]
@@ -557,7 +559,7 @@ ggplot(passantenanzahl_stunden_plot,
   scale_x_continuous(breaks = seq(0, 23, by = 2)) +
   
   labs(
-    title = "Aufgabe 5: Heatmap des Tagesverlaufs",
+    title = "Heatmap des Tagesverlaufs",
     x = "Uhrzeit (Stunde des Tages)",
     y = "Messstelle",
     fill = "Durchschnittl.
@@ -565,17 +567,12 @@ Passanten"
   ) +
   theme_minimal()
 ```
-Die Heatmap dient als effektive, komplementäre Visualisierung der stündlichen Passantenfrequenzen.
-Durch die Darstellung der Passantenanzahl mittels Farbintensität ermöglicht sie eine schnelle Identifizierung von "Hot Spots" und bestätigt die bereits im Liniendiagramm gewonnenen Erkenntnisse.
-Dies zeigt sich beispielsweise in der deutlich intensiveren Färbung der
-Kaiserstraße in den frühen Morgenstunden sowie den hellsten Bereichen für alle Standorte am Nachmittag, was die zuvor beschriebenen Muster visuell unterstreicht.
-## Vorhersagemodell
+
+Die Heatmap dient als effektive, komplementäre Visualisierung der stündlichen Passantenfrequenzen. Durch die Darstellung der Passantenanzahl mittels Farbintensität ermöglicht sie eine schnelle Identifizierung von "Hot Spots" und bestätigt die bereits im Liniendiagramm gewonnenen Erkenntnisse. Dies zeigt sich beispielsweise in der deutlich intensiveren Färbung der Kaiserstraße in den frühen Morgenstunden sowie den hellsten Bereichen für alle Standorte am Nachmittag, was die zuvor beschriebenen Muster visuell unterstreicht. \## Vorhersagemodell
 
 Durch die in Aufgabe 4 beschreiben Korrelation zwischen den Straßen in der durchschnittlichen Tageswert stellt sich nun die frage ob man die auslastung einer Straße durch die werte der beiden anderen vorhersagen kann. Aus Aufgabe 5 Wissen wir, das die Kaiserstaße sehr ähnlich zur durchschnittlichen Gesamtauslastung ist. Daher versucht man die Kaiserstraße durch die Spiegel und Schönborstraße vorherzusagen.
 
-
-
-````{r}
+```{r}
 #' [3. Multiple Lineare Regression]
 #' @description
 #' [Modelliert einen Standort (Kaiserstraße) als Funktion
@@ -596,17 +593,17 @@ zusammenfassung
 
 #kable(zusammenfassung, caption= "Zusammenfassung der Regressionsberechnung.")
 
-````
+```
+
 Die erstellte lineare Regression liefert ein Modell, um die Passantenfrequenz der Kaiserstraße auf Basis der Frequenzen der Schönbornstraße und Spiegelstraße vorherzusagen. Die Zusammenfassung des Modells (`summary(model)`) gibt Aufschluss über die Güte und die Zusammenhänge:
 
-**Statistische Signifikanz p-value:**
-Die erste und wichtigste Zeile welche man für eine Auswertung betrachtet ist die unterste: F-statistic:  2382 on 2 and 21 DF,  p-value: < 2.2e-16. Das p-value ist hier mit 2.2e-16 angegeben. Dieser sehr kleinen p-Werte deuten darauf hin, dass der Einfluss beider Straßen auf die Kaiserstraße hoch signifikant ist. Es ist also äußerst unwahrscheinlich, dass dieser starke Zusammenhang nur ein Zufallsprodukt in den Daten ist.
+**Statistische Signifikanz p-value:** Die erste und wichtigste Zeile welche man für eine Auswertung betrachtet ist die unterste: F-statistic: 2382 on 2 and 21 DF, p-value: \< 2.2e-16. Das p-value ist hier mit 2.2e-16 angegeben. Dieser sehr kleinen p-Werte deuten darauf hin, dass der Einfluss beider Straßen auf die Kaiserstraße hoch signifikant ist. Es ist also äußerst unwahrscheinlich, dass dieser starke Zusammenhang nur ein Zufallsprodukt in den Daten ist.
 
 **Modellgüte (`Adjusted R-squared`):** Das adjustierte R-Quadrat (`Adjusted R-squared`) ist das wichtigste Maß für die Güte des Modells. Der Wert von 0.9956 bedeuten, dass das Modell **99 %** der Varianz (der Schwankungen) in den Passantenzahlen der Kaiserstraße allein durch die Daten der beiden anderen Straßen erklären kann. Ein derart hoher Wert zeigt eine exzellente Passform und bestätigt, dass die Passantenströme der drei Straßen systemisch stark miteinander verknüpft sind. Die Güte des berechneten modell ist hier sehr hoch.
 
 **Interpretation der Koeffizienten (`Coefficients`):** Die Koeffizienten zeigen, wie stark die beiden anderen Straßen die Kaiserstraße beeinflussen. Der positiver Koeffizient von 0.21 bei der Schönbornsprache liefert das modell folgende berechnung: ein Passatn mehr in der Schönbornstraße fürhr zu 0.2 Passanten mehr in der Kaiserstraße.
 
-````{r}
+```{r}
 
 
 #' [1. "Intuitiver" Modell-Plot (Dumbbell-Plot)]
@@ -617,7 +614,6 @@ Die erste und wichtigste Zeile welche man für eine Auswertung betrachtet ist di
 #' @param model [lm-Objekt] Dein Regressionsmodell ('model')
 #' @param passantenanzahl_stunden_wide [DataFrame] Dein "breiter" DF,
 #'   der 'stunde' und die Prädiktoren (Schönbornstraße etc.) enthält.
-
 model_data_augmented <- augment(model, newdata = passantenanzahl_stunden_wide)
 
 ggplot(model_data_augmented, aes(x = stunde)) +
@@ -654,15 +650,13 @@ ggplot(model_data_augmented, aes(x = stunde)) +
     y = "Passanten durchnitt je Stunde (Kaiserstraße)"
   ) +
   theme_minimal()
-````
-
-
+```
 
 Das Diagramm stellt die tatsächlichen Werte (blaue Punkte) den vom Modell vorhergesagten Werten (rote Kreuze) für jede Stunde gegenüber. - Die grünen Verbindungslinien visualisieren den Vorhersagefehler (die Residuen) für jede Stunde. - Man erkennt, dass die Linien insgesamt sehr kurz sind, was die hohe Genauigkeit des Modells visuell bestätigt. Die Vorhersagen liegen sehr nah an den echten Werten.
 
 Eine Abweichungen bei der das Modell weniger vorhersagt (Tatsächlicher Wert liegt über der Vorhersage) ist um 6 Uhr morgens und im Zeitraum 15-19 Uhr. Diese Abweichung könnte durch das erhöhte Pendleraufkommen am Hauptbahnhof zu beginn und ende eines Arbeitstages entstehen. Aufgrund des unmittelbaren Anschluss der Kaiserstraße an den Hauptbahnhof ist diese spezifische Event nicht auf den anderen straßen anzutreffen. So können sie die Auslasung nicht vorhersagen und Residuen entstehen.
 
-Im Zeitraum von 10 bis 12 Uhr sagt das Modell einen höheren wert voraus. Das bedeutet, das auf annhame der Auslasutng Schönborn und Spiegelstraße die Kaiserstraße voller sien müsst. Aus dem Liniendiagramm der Aufgabe 5 ist zu erkenne, das dei Spiegelstraße um 10Uhr einen "Mittagspeak" hat. Die Kaiserstaße hingehen Stagniert um 10 Uhr befor sie gegen 15 Uhr ihren Peak erreicht. Der Peak der Spiegelstraße könnte hier die erklärung für das "überschätzen" des modell sein. 
+Im Zeitraum von 10 bis 12 Uhr sagt das Modell einen höheren wert voraus. Das bedeutet, das auf annhame der Auslasutng Schönborn und Spiegelstraße die Kaiserstraße voller sien müsst. Aus dem Liniendiagramm der Aufgabe 5 ist zu erkenne, das dei Spiegelstraße um 10Uhr einen "Mittagspeak" hat. Die Kaiserstaße hingehen Stagniert um 10 Uhr befor sie gegen 15 Uhr ihren Peak erreicht. Der Peak der Spiegelstraße könnte hier die erklärung für das "überschätzen" des modell sein.
 
 Zusammenfassend lässt sich sagen, dass das lineare Regressionsmodell hervorragend geeignet ist, die Passantenfrequenz der Kaiserstraße vorherzusagen. Dies untermauert die bereits in der Korrelationsanalyse gezeigte starke systemische Verbindung der Passantenströme in diesem Bereich der Innenstadt.
 
