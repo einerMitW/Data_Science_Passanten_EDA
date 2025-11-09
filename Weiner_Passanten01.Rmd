@@ -1,11 +1,11 @@
 ---
 title: "Weiner_Passanten01"
 output:
-  pdf_document:
-    latex_engine: xelatex
-    toc: true
   html_document:
     df_print: paged
+    toc: true
+  pdf_document:
+    latex_engine: xelatex
     toc: true
 bibliography: bib.bib
 csl: ieee.csl
@@ -13,7 +13,7 @@ csl: ieee.csl
 
 ```{r setup, include=FALSE}
 #Pdf Format Nachschlagewerk {r}:
-#echo = FALSE /verhindert das der code Block im Pdf angezeigt wird.
+#echo = FALSE /verhindert, dass der code Block im Pdf angezeigt wird.
 #message=FALSE /Beim Knitten werden nun keine Meldungen oder Warnungen von diesem Chunk angezeigt.
 #warning = FALSE /Warnungen wie Removed 3 rows containing missing values... von ggplot2 erscheinen nicht im PDF
 
@@ -87,7 +87,7 @@ globale_farb_palette = c(
 
 ## Einleitung
 
-Lebendige Innenstädte sind das Zentrum, die Einkaufsmeile und der Treffpunkt einer Stadt. Um diese Ströme zu verstehen, führt diese Arbeit eine explorative Datenanalyse (EDA) eines offenen Datensatzes der Stadt Würzburg durch. Dabei werden die stündlichen Passantenzahlen an drei zentralen Messstellen (Kaiserstraße, Schönbornstraße und Spiegelstraße) im Jahr 2024 untersucht. Ziel ist es, die zentralen Muster und Rhythmen der Passantennutzung zu identifizieren. Mittels R werden die zeitlichen Entwicklungen im Jahres-, Wochen- und Tagesverlauf sowie die Auslastung der Standorte verglichen.
+Lebendige Innenstädte sind das Zentrum, die Einkaufsmeile und der Treffpunkt einer Stadt. Um diese Ströme zu verstehen, führt diese Arbeit eine explorative Datenanalyse (EDA) eines offenen Datensatzes der Stadt Würzburg durch. Dabei werden die stündlichen Passantenzahlen an drei zentralen Messstellen (Kaiserstraße, Schönbornstraße und Spiegelstraße) im Jahr 2024 untersucht. Ziel ist es, die zentralen Muster und Rhythmen der Passantennutzung zu identifizieren. Mittels des Interpretationsprogramm R werden die zeitlichen Entwicklungen im Jahres-, Wochen- und Tagesverlauf sowie die Auslastung der Standorte verglichen.
 
 ## Import und Datenbereinigung
 
@@ -111,7 +111,7 @@ passanten <- passanten %>%
   filter(jahr == 2024)
 ```
 
-Nun besitzt man die Daten als Dataframe „passanten“ und zur Referenz als „passanten_raw“. Dabei wurde der Dataframe passanten bereits in ein Tibble-Format überführt (ein moderner Dataframe) und bereits angepasst. So wurden weitere Spalten zum Dataframe hinzugefügt, die den Umgang mit den Daten später erleichtern, z. B. ist nun jede Woche über einen Index klar abfragbar. Auch wurden alle Daten aussortiert, die nicht aus dem Jahr 2024 stammen. Um nun eine sinnvolle, deskriptive oder weiterführende Explorative Datenanalyse durchzuführen, sollten die Daten zuerst bereinigt werden. Als Nächstes benennen wir die Spaltennamen in Snake-Case um.
+Damit besitzt man die Daten als Dataframe „passanten“ und zur Referenz als „passanten_raw“. Der Dataframe passanten wurde bereits in ein Tibble-Format überführt (ein moderner Dataframe) und angepasst. So wurden weitere Spalten zum Dataframe hinzugefügt, die den Umgang mit den Daten später erleichtern, z. B. ist nun jede Woche über einen Index klar abfragbar. Auch wurden alle Daten aussortiert, die nicht aus dem Jahr 2024 stammen. Um nun eine sinnvolle, deskriptive oder weiterführende Explorative Datenanalyse durchzuführen, sollten die Daten zuerst bereinigt werden. Als Nächstes benennen wir die Spaltennamen in Snake-Case um.
 
 ```{r}
 passanten <- clean_names(passanten)
@@ -141,7 +141,7 @@ Der Datensatz besteht aus 26015 Zeilen und 13 Spalten, von denen 8 numerische, e
 
 ### Erhebung
 
-Die Daten stammen von Zählstationen an verschiedenen Punkten aus der Würzburger Innenstadt. Mit Hilfe von Laserschranken zählen diese die Anzahl der Passanten, welche gerade die Messstation queren. Durch das Messen mit mehreren Laserschranken pro Messstation kann auch die Geh-Richtung des Passanten bestimmt werden [@methodik]. Zur Konsistenz der Daten wird vermerkt: „Nach Herstellerangabe kann mit der verwendeten Technik bis zu einem Durchfluss von ca. 500 Personen pro Minute eine Zählgenauigkeit von 99% erreicht werden“, vgl. [@methodik]. Dabei ist zu beachten, dass eine Zählstation eine Straße bis maximal 32m Breite abdecken kann. Die Erheber der Daten versichern jedoch, dass „Bei den veröffentlichten Daten handelt es sich immer um die Passantenfrequenz der gesamten Straßenbreite (außer es ist explizit anders angegeben)“, vgl. [@methodik].
+Die Daten stammen von Zählstationen an verschiedenen Punkten aus der Würzburger Innenstadt. Mit Hilfe von Laserschranken zählen diese die Anzahl der Passanten, welche gerade die Messstation queren. Durch das Messen mit mehreren Laserschranken pro Messstation kann auch die Geh-Richtung des Passanten bestimmt werden [@methodik]. Zur Konsistenz der Daten wird vermerkt: „Nach Herstellerangabe kann mit der verwendeten Technik bis zu einem Durchfluss von ca. 500 Personen pro Minute eine Zählgenauigkeit von 99% erreicht werden“, vgl. [@methodik]. Dabei ist zu beachten, dass eine Zählstation eine Straße bis maximal 32m Breite abdecken kann. Die Erheber der Daten versichern: „Bei den veröffentlichten Daten handelt es sich immer um die Passantenfrequenz der gesamten Straßenbreite (außer es ist explizit anders angegeben)“, vgl. [@methodik].
 
 ### Standorte
 
@@ -162,15 +162,15 @@ knitr::include_graphics("Bilder/wuerzburg_stadtplan_messtationen.png")
 
 Die Koordinaten stimmen mit der jeweiligen Straße und dem Namen der Messstation überein. In der Abbildung sieht man, dass die Stationen direkt in der Innenstadt platziert sind. Dabei ist jede Station in der Nähe einer Sehenswürdigkeit bzw. eines öffentlichen Gebäudes.
 
-Die Messstation Schönbornstraße befindet sich nah an der Marienkapelle, die Messstation Spiegelstraße auf dem Weg zum Hofgarten und die Messstation Kaiserstraße ist in der Nähe des Hauptbahnhofs. Alle diese Straßen sind Hauptverkehrsstraßen, auf denen mit vielen Passanten zu rechnen ist. Das Dreiecksmuster, welches die Stationen aufspannen, bildet somit eine Art Transitstrecke zwischen: Hauptbahnhof -> Hofgarten -> Marienkapelle -> Hauptbahnhof.
+Die Messstation Schönbornstraße befindet sich nah an der Marienkapelle, die Messstation Spiegelstraße auf dem Weg zum Hofgarten und die Messstation Kaiserstraße ist in der Nähe des Hauptbahnhofs. Alle diese Straßen sind Hauptverkehrsstraßen, auf denen mit vielen Passanten zu rechnen ist. Das Dreiecksmuster, welches die Stationen aufspannen, bildet somit eine Art Transitstrecke zwischen: Hauptbahnhof -\> Hofgarten -\> Marienkapelle -\> Hauptbahnhof.
 
 ### Leitfragen
 
 Nach der grundlegenden Beschreibung der Daten und einer Einführung in den Datensatz sowie seinen Kontext folgen Leitfragen, welche helfen, die EDA zu leiten.
 
-1.  Gibt es besondere Ereignisse in der Würzburger Innenstadt, welche erkennbar sind?
-2.  Was ist die beliebteste Region in der Innenstadt?
-3. Woher kommt die Beliebtheit (Attraktionen, wichtiger Teil des Alltags, Veranstaltungsorte, ...)?
+1. Was ist die beliebteste Region in der Innenstadt?
+2. Woher kommt die Beliebtheit (Attraktionen, wichtiger Teil des Alltags, Veranstaltungsorte, ...)?
+3. Gibt es besondere Ereignisse in der Würzburger Innenstadt, welche erkennbar sind?
 
 ## 2. Aggregierte Jahresanalyse der Standorte
 
@@ -252,9 +252,10 @@ kable(tabelle_standorte_sauber, digits = 0, caption = "Jahressumme und Mittelwer
 kable(tabelle_gesamt_sauber, digits = 0, caption = "Jahressumme der Passantenanzahl")
 ```
 
-Bereits durch die einfache Berechnung der Mittelwerte pro Jahr, Monat, Woche und Tag lässt sich festhalten, dass die Schönbornstraße die meiste Auslastung, mit fast 10 Millionen Passanten 2024, erhalten hat. Mit 21864318 Passanten, die 2024 insgesamt gezählt wurden, stellt die Schönbornstraße somit 43% des gesamten Passantenverkehrs dar. Den Daten nach ordnet sich die Kaiserstraße als zweite und die Spiegelstraße als am wenigsten genutzte Straße an. Ebenfalls auffällig ist, dass die Schönbornstraße eine fast doppelt so hohe Auslastung wie die Spiegelstraße hat. Somit ist hier eine ungleiche Aufteilung der Gesamtauslastung festzustellen.
+Bereits durch die einfache Berechnung der Mittelwerte pro Jahr, Monat, Woche und Tag lässt sich festhalten, dass die Schönbornstraße die höchste Auslastung, mit fast 10 Millionen Passanten 2024, erhalten hat. Mit 21864318 Passanten, die 2024 insgesamt gezählt wurden, stellt die Schönbornstraße somit 43% des gesamten Passantenverkehrs dar. Den Daten nach ordnet sich die Kaiserstraße als zweite und die Spiegelstraße als am wenigsten genutzte Straße an. Ebenfalls auffällig ist, dass die Schönbornstraße eine fast doppelt so hohe Auslastung wie die Spiegelstraße hat. Somit ist hier eine ungleiche Aufteilung der Gesamtauslastung festzustellen.
 
 ## 3. Analyse des Saisonalen Jahresverlaufs
+
 Hier wird die zeitliche Entwicklung der Passantenfrequenzen über das Jahr als Monatssumme visualisiert. Ziel ist die Identifikation und Interpretation saisonaler Muster, wie etwa Einflüsse durch Jahreszeiten oder Feiertage.
 
 ```{r}
@@ -311,11 +312,12 @@ plot_aufgabe3
 
 Das erstellte Diagramm bestätigt das aus Aufgabe 2 bereits beschriebene Muster. Die Auslastung der Schönbornstraße ist konstant am höchsten, gefolgt von der Kaiserstraße und der Spiegelstraße. Diese Reihenfolge ist über das gesamte Jahr erkennbar, was darauf schließen lässt, dass diese Auslastung nicht durch Events oder außergewöhnliche Ereignisse, sondern eher den Alltag in der Würzburger Innenstadt darstellt. In der Gesamtsumme kann man einen Anstieg ab April erkennen. Dies könnte auf den Beginn des Frühlings zurückzuführen sein.
 
-Im Oktober und Dezember scheinen einige Events die Anzahl der Passanten in der Innenstadt erhöht zu haben. Das Liniendiagramm zeigt entsprechende Ausreißer im Oktober in der Gesamtsumme, aber auch an den jeweiligen Stationen. Grund für die Erhöhung im Oktober könnten mehrere Veranstaltungen im Oktober sein. Die größte davon ist der Mantelsonntag mit Allerheiligenmesse am Sonntag dem 27.10.2024 [@WuerzburgMachtSpass]. Der Mantelsonntag ist ein jährliches Ereignis am letzten Sonntag im Oktober vgl [@WuerzburgMachtSpass].„Am Einkaufstag für die ganze Familie haben die Geschäfte in der Würzburger Innenstadt von 13 bis 18 Uhr geöffnet. Viele kostenfreie Parkplätze an der Oberfläche und Tiefpreisparken in den Parkgaragen machen das Einkaufen am einzigen verkaufsoffenen Sonntag Würzburgs zum Vergnügen.“ [@WuerzburgMachtSpass]. Dieses Ereignis erklärt nicht allein den Anstieg in der Gesamtsumme von ca. 240.000 Passanten, dennoch liefert es einen Beitrag dazu. Speziell auf der Kaiserstraße und Schönbornstraße zeigt das Liniendiagramm einen markanten Anstieg der Gesamtzahl pro Messstation. Hierzu betrachten wir die Orte, auf die der verkaufsoffene Mantelsonntag einen Einfluss hat. An der Schönbornstraße, einer der Haupteinkaufsstraßen in Würzburg vgl[@StadtBUMMELWurzburgWurzburgs], erklärt sich die erhöhte Nutzung für einen verkaufsoffenen Sonntag. Wie man aus der oben gezeigten Abbildung entnehmen kann, ist die Kaiserstraße eine direkte Verbindung vom Hauptbahnhof zur Schönbornstraße. Somit dient sie als Transitstraße für die An- und Abreise über den Hauptbahnhof. Zusätzlich zählt sie ebenfalls zu den Einkaufsstraßen. So lässt sich auch der Anstieg in der Kaiserstraße erklären.
+Im Oktober und Dezember scheinen einige Events die Anzahl der Passanten in der Innenstadt erhöht zu haben. Das Liniendiagramm zeigt entsprechende Ausreißer im Oktober in der Gesamtsumme, aber auch an den jeweiligen Stationen. Grund für die Erhöhung im Oktober könnten mehrere Veranstaltungen im Oktober sein. Die größte davon ist die Allerheiligenmesse, ein mehrtägiger Markt in der Innenstadt historischen Ursprungs mit verkaufsoffenem Sonntag (Mantelsonntag am 27.10.2024) [@WuerzburgMachtSpass]. Der Mantelsonntag ist ein jährliches Ereignis am letzten Sonntag im Oktober vgl [@WuerzburgMachtSpass].„Am Einkaufstag für die ganze Familie haben die Geschäfte in der Würzburger Innenstadt von 13 bis 18 Uhr geöffnet. Viele kostenfreie Parkplätze an der Oberfläche und Tiefpreisparken in den Parkgaragen machen das Einkaufen am einzigen verkaufsoffenen Sonntag Würzburgs zum Vergnügen.“ [@WuerzburgMachtSpass]. Dieses Ereignis erklärt nicht allein den Anstieg in der Gesamtsumme von ca. 240.000 Passanten, dennoch liefert es einen Beitrag dazu. Speziell auf der Kaiserstraße und Schönbornstraße zeigt das Liniendiagramm einen markanten Anstieg der Gesamtzahl pro Messstation. Hierzu betrachten wir die Orte, auf die der verkaufsoffene Mantelsonntag einen Einfluss hat. An der Schönbornstraße, einer der Haupteinkaufsstraßen in Würzburg vgl[@StadtBUMMELWurzburgWurzburgs], erklärt sich die erhöhte Nutzung für einen verkaufsoffenen Sonntag. Wie man aus der oben gezeigten Abbildung entnehmen kann, ist die Kaiserstraße eine direkte Verbindung vom Hauptbahnhof zur Schönbornstraße. Somit dient sie als Transitstraße für die An- und Abreise über den Hauptbahnhof. Zusätzlich zählt sie ebenfalls zu den Einkaufsstraßen. So lässt sich auch der Anstieg in der Kaiserstraße erklären.
 
 Im Dezember gab es weitere Veranstaltungen in der Innenstadt. Hierbei zeigt das Liniendiagramm einen Anstieg in der Gesamtsumme, aber auch auf der Schönborn- und Spiegelstraße. Die Erklärung hierfür ist der Weihnachtsmarkt von Ende November bis zum 23. Dezember 2024 [@krausIst2024Auf2024]. Veranstaltungsort ist hier ebenfalls der Obere und Untere Marktplatz und die Schönbornstraße, weshalb diese den höchsten Anstieg verzeichnet.
 
 ## 4. Analyse des Wöchentlichen Rhythmus
+
 Diese Sektion analysiert den typischen Wochenrhythmus, indem der durchschnittliche Tageswert pro Wochentag untersucht wird. Dadurch werden die charakteristischen Unterschiede zwischen Werktagen und dem Wochenende herausgearbeitet und interpretiert.
 
 ```{r}
@@ -438,8 +440,7 @@ plot_aufgabe4
 
 Das Diagramm beschreibt die durchschnittliche Auslastung pro Tag, gegliedert nach dem Gesamtdurchschnitt und den einzelnen Locations. Auch in der reingezoomten Perspektive auf die Jahresdurchschnitte auf den Wochentagen bleibt die Erkenntnis aus Aufgabe 2 bestehen. Die Rangliste der höchsten Auslastung beginnt erneut mit der Schönbornstraße, gefolgt von der Kaiser- und Spiegelstraße.
 
-Die Grafik bestätigt den normalen Wochenrhythmus. Sichtbar wird das an den gleichbleibenden Durchschnitten von Montag bis Donnerstag, gefolgt von dem Anstieg am Freitag und Samstag und wenigen Passanten am Sonntag. Eine Begründung für diesen Wochenrhythmus ist das tägliche Geschäft in der Arbeitswoche, gefolgt von Samstag, an dem sich mehr Leute in der Innenstadt aufhalten. Da am Sonntag viele Geschäfte geschlossen haben, ist die Innenstadt auch nicht so stark besucht. Bemerkenswert ist hier die gleichmäßige Verteilung am Sonntag zwischen den einzelnen Straßen. Das gibt Aufschluss über die Grundauslastung der einzelnen Straßen ohne den Einfluss von Arbeitstagen oder offenen Geschäften. Dennoch ist die bereits erkannte Rangfolge unter den Straßen immer noch intakt.
-Ebenfalls auffällig ist die Korrelation unter den Straßen. Steigt der Gesamtdurchschnitt, so steigt auch der Durchschnitt jeder einzelnen Messstation. Das spricht für eine gewisse Korrelation zwischen den Auslastungen der einzelnen Straßen.
+Die Grafik bestätigt den normalen Wochenrhythmus. Sichtbar wird das an den gleichbleibenden Durchschnitten von Montag bis Donnerstag, gefolgt von dem Anstieg am Freitag und Samstag und wenigen Passanten am Sonntag. Eine Begründung für diesen Wochenrhythmus ist das tägliche Geschäft in der Arbeitswoche, gefolgt von Freitagabend und Samstag, an dem sich mehr Leute in der Innenstadt aufhalten. Da am Sonntag viele Geschäfte geschlossen haben, ist die Innenstadt auch nicht so stark besucht. Bemerkenswert ist hier die gleichmäßige Verteilung am Sonntag zwischen den einzelnen Straßen. Das gibt Aufschluss über die Grundauslastung der einzelnen Straßen ohne den Einfluss von Arbeitstagen oder offenen Geschäften. Dennoch bleibt die bereits erkannte Rangfolge unter den Straßen bestehen. Ebenfalls auffällig ist die Korrelation unter den Straßen. Steigt der Gesamtdurchschnitt, so steigt auch der Durchschnitt jeder einzelnen Messstation. Das spricht für eine gewisse Korrelation zwischen den Auslastungen der einzelnen Straßen.
 
 ```{r}
 #' [1. Datenaufbereitung für Korrelation (Aufgabe 4)]
@@ -471,9 +472,10 @@ cor_matrix_task4 <- cor(correlation_data_task4)
 corrplot(cor_matrix_task4, type = "lower", method = "color")
 ```
 
-Über die Berechnung der Korrelation erkennt man eine starke Korrelation. Ein Wert >0.5 gilt als starker Zusammenhang. Aus der Korrelationsmatrix lässt sich eine Korrelation >0.5 für alle Straßen ablesen. Somit kann man davon ausgehen, dass die Auslastung der einzelnen Straßen sich untereinander beeinflusst bzw. einem Rhythmus folgen, der alle Standorte betrifft.
+Über die Berechnung der Korrelation erkennt man eine starke Korrelation. Ein Wert \>0.5 gilt als starker Zusammenhang. Aus der Korrelationsmatrix lässt sich eine Korrelation \>0.5 für alle Straßen ablesen. Somit kann man davon ausgehen, dass die Auslastung der einzelnen Straßen sich untereinander beeinflusst bzw. einem Rhythmus folgen, der alle Standorte betrifft.
 
-## 5. Analyse des Täglichen Profils
+## 5. Analyse des täglichen Profils
+
 Auf der granularsten Ebene wird das durchschnittliche Tagesprofil (0-23 Uhr) analysiert. Diese Analyse zielt darauf ab, tageszeitliche Spitzen (z.B. Rush-Hour) und spezifische Nutzungstypen der Standorte zu identifizieren.
 
 ```{r}
@@ -565,7 +567,7 @@ Das auf Grundlage der Tabelle erstellte Liniendiagramm zeigt den Durchschnitt de
 
 Die bereits festgestellte Rangliste nach Auslastung bestätigt sich auch in dieser Ansicht.
 
-Morgens pendeln mehr Leute über die Kaiserstraße. Das ist im Bereich zwischen 4 und 7 Uhr auf dem Graphen abzulesen. Die Kaiserstraße liegt dabei  über dem Gesamtdurchschnitt, der Schönborn- und Spiegelstraße. Eine Begründung ist die Lage der Kaiserstraße. Sie ist die direkte Verbindung vom Hauptbahnhof in die Innenstadt. Da die Anzahl der Werktage die Anzahl der Feiertage + gesetzlich vorgegebener Urlaubstage übertrifft, kann man davon ausgehen, dass der Durchschnitt stark durch den morgendlichen Verkehr zum Hauptbahnhof beeinflusst ist.
+Morgens pendeln mehr Leute über die Kaiserstraße. Das ist im Bereich zwischen 4 und 7 Uhr auf dem Graphen abzulesen. Die Kaiserstraße liegt dabei über dem Gesamtdurchschnitt, der Schönborn- und Spiegelstraße. Eine Begründung ist die Lage der Kaiserstraße. Sie ist die direkte Verbindung vom Hauptbahnhof in die Innenstadt. Da die Anzahl der Werktage die Anzahl der Feiertage + gesetzlich vorgegebener Urlaubstage übertrifft, kann man davon ausgehen, dass der Durchschnitt stark durch den morgendlichen Verkehr zum Hauptbahnhof beeinflusst ist.
 
 Die Kaiserstraße scheint demnach den Gesamtdurchschnitt sehr genau abzubilden. Ablesbar ist dies aus dem Diagramm, da die Kaiserstraße und der Gesamtdurchschnitt einen ähnlichen Verlauf haben.
 
@@ -598,7 +600,7 @@ Passanten"
   theme_minimal()
 ```
 
-Die Heatmap dient als effektive, komplementäre Visualisierung der stündlichen Passantenfrequenzen. Durch die Darstellung der Passantenanzahl mittels Farbintensität ermöglicht sie eine schnelle Identifizierung von "Hot Spots" und bestätigt die bereits im Liniendiagramm gewonnenen Erkenntnisse. Dies zeigt sich beispielsweise in der deutlich intensiveren Färbung der Kaiserstraße in den frühen Morgenstunden sowie den hellsten Bereichen für alle Standorte am Nachmittag, was die zuvor beschriebenen Muster visuell unterstreicht. ## Vorhersagemodell
+Die Heatmap dient als effektive, komplementäre Visualisierung der stündlichen Passantenfrequenzen. Durch die Darstellung der Passantenanzahl mittels Farbintensität ermöglicht sie eine schnelle Identifizierung von "Hot Spots" und bestätigt die bereits im Liniendiagramm gewonnenen Erkenntnisse. Dies zeigt sich beispielsweise in der deutlich intensiveren Färbung der Kaiserstraße in den frühen Morgenstunden sowie den hellsten Bereichen für alle Standorte am Nachmittag, was die zuvor beschriebenen Muster visuell unterstreicht. \## Vorhersagemodell
 
 Durch die in Abschnitt 4 beschriebene Korrelation zwischen den Straßen in der durchschnittlichen Tageswert stellt sich nun die Frage, ob man die Auslastung einer Straße durch die Werte der beiden anderen vorhersagen kann. Aus Abschnitt 5 wissen wir, dass die Kaiserstraße sehr ähnlich zur durchschnittlichen Gesamtauslastung ist. Daher wird versucht, die Kaiserstraße durch die Spiegel- und Schönbornstraße vorherzusagen.
 
@@ -627,7 +629,7 @@ zusammenfassung
 
 Die erstellte lineare Regression liefert ein Modell, um die Passantenfrequenz der Kaiserstraße auf Basis der Frequenzen der Schönbornstraße und Spiegelstraße vorherzusagen. Die Zusammenfassung des Modells (`summary(model)`) gibt Aufschluss über die Güte und die Zusammenhänge:
 
-**Statistische Signifikanz p-value:** Die erste und wichtigste Zeile, welche man für eine Auswertung betrachtet, ist die unterste: F-statistic: 2382 on 2 and 21 DF, p-value: < 2.2e-16. Das p-value ist hier mit 2.2e-16 angegeben. Diese sehr kleinen p-Werte deuten darauf hin, dass der Einfluss beider Straßen auf die Kaiserstraße hoch signifikant ist. Es ist also äußerst unwahrscheinlich, dass dieser starke Zusammenhang nur ein Zufallsprodukt in den Daten ist.
+**Statistische Signifikanz p-value:** Die erste und wichtigste Zeile, welche man für eine Auswertung betrachtet, ist die unterste: F-statistic: 2382 on 2 and 21 DF, p-value: \< 2.2e-16. Das p-value ist hier mit 2.2e-16 angegeben. Diese sehr kleinen p-Werte deuten darauf hin, dass der Einfluss beider Straßen auf die Kaiserstraße hoch signifikant ist. Es ist also äußerst unwahrscheinlich, dass dieser starke Zusammenhang nur ein Zufallsprodukt in den Daten ist.
 
 **Modellgüte (`Adjusted R-squared`):** Das adjustierte R-Quadrat (`Adjusted R-squared`) ist das wichtigste Maß für die Güte des Modells. Der Wert von 0.9956 bedeutet, dass das Modell **99 %** der Varianz (der Schwankungen) in den Passantenzahlen der Kaiserstraße allein durch die Daten der beiden anderen Straßen erklären kann. Ein derart hoher Wert zeigt eine exzellente Passform und bestätigt, dass die Passantenströme der drei Straßen systemisch stark miteinander verknüpft sind. Die Güte des berechneten Modells ist hier sehr hoch.
 
@@ -683,15 +685,16 @@ ggplot(model_data_augmented, aes(x = stunde)) +
 
 Das Diagramm stellt die tatsächlichen Werte (blaue Punkte) den vom Modell vorhergesagten Werten (rote Kreuze) für jede Stunde gegenüber. - Die grünen Verbindungslinien visualisieren den Vorhersagefehler (die Residuen) für jede Stunde. - Man erkennt, dass die Linien insgesamt sehr kurz sind, was die hohe Genauigkeit des Modells visuell bestätigt. Die Vorhersagen liegen sehr nah an den echten Werten.
 
-Eine Abweichung, bei der das Modell weniger vorhersagt (Tatsächlicher Wert liegt über der Vorhersage) ist um 6 Uhr morgens und im Zeitraum 15-19 Uhr. Diese Abweichung könnte durch das erhöhte Pendleraufkommen am Hauptbahnhof zu Beginn und Ende eines Arbeitstages entstehen. Aufgrund des unmittelbaren Anschluss der Kaiserstraße an den Hauptbahnhof ist dieses spezifische Ereignis nicht auf den anderen Straßen anzutreffen. So kann es die Auslastung nicht vorhersagen und Residuen entstehen.
+Eine Abweichung, bei der das Modell weniger  Passantenvorhersagt (Tatsächlicher Wert liegt über der Vorhersage) ist morgens (5 - 7 Uhr) und nachmittags im Zeitraum 15-18 Uhr. Diese Abweichung könnte durch das erhöhte Pendleraufkommen am Hauptbahnhof zu Beginn und Ende eines Arbeitstages entstehen, welche jedoch nicht die beiden anderen Straßen passieren. 
 
-Im Zeitraum von 10 bis 12 Uhr sagt das Modell einen höheren Wert voraus. Das bedeutet, dass bei Annahme der Auslastung von Schönborn- und Spiegelstraße die Kaiserstraße voller sein müsste. Aus dem Liniendiagramm der Aufgabe 5 ist zu erkennen, dass die Spiegelstraße um 10 Uhr einen „Mittagspeak“ hat. Die Kaiserstraße hingegen stagniert um 10 Uhr, bevor sie gegen 15 Uhr ihren Peak erreicht. Der Peak der Spiegelstraße könnte hier die Erklärung für das „Überschätzen“ des Modells sein.
+Im Zeitraum von 10 bis 13 Uhr sagt das Modell einen höheren Wert voraus. Das bedeutet, dass bei Annahme der Auslastung von Schönborn- und Spiegelstraße die Kaiserstraße voller sein müsste. Aus dem Liniendiagramm der Aufgabe 5 ist zu erkennen, dass die Spiegelstraße um 10 Uhr einen „Mittagspeak“ hat. Die Kaiserstraße hingegen stagniert um 10 Uhr, bevor sie gegen 15 Uhr ihren Peak erreicht. Der Peak der Spiegelstraße könnte hier die Erklärung für das „Überschätzen“ des Modells sein. Der Grund hierfür könnte die Benutzung der Spiegelstraße in der Mittagspause sein, z. B. in Richtung Hofgarten, während jedoch die Pendlerverkehre an der Kaiserstraße im Verhältnis geringer sind. 
 
-Zusammenfassend lässt sich sagen, dass das lineare Regressionsmodell hervorragend geeignet ist, die Passantenfrequenz der Kaiserstraße vorherzusagen. Dies untermauert die bereits in der Korrelationsanalyse gezeigte starke systemische Verbindung der Passantenströme in diesem Bereich der Innenstadt.
+Zusammenfassend lässt sich sagen, dass das lineare Regressionsmodell hervorragend geeignet ist, die Passantenfrequenz der Kaiserstraße vorherzusagen. Dies untermauert die bereits in der Korrelationsanalyse gezeigte starke systemische Verbindung der Passantenströme an den drei betrachteten Pukten der Innenstadt.
 
 ## Fazit
-Die explorative Datenanalyse der Würzburger Passantenzahlen für das Jahr 2024 hat erfolgreich grundlegende Muster und Zusammenhänge aufgedeckt. Als Antwort auf die Leitfragen wurde die Schönbornstraße eindeutig als belebtester Standort identifiziert, deren hohe Frequenz auf ihre zentrale Lage als Einkaufsstraße und die Nähe zu Sehenswürdigkeiten zurückzuführen ist. Die Analyse bestätigte klare Wochen- und Tagesrhythmen, die dem typischen Stadtleben mit Pendler- und Einkaufsverkehr entsprechen. Zudem konnten saisonale Ereignisse wie der Weihnachtsmarkt und Mantelsonntag als deutliche Ausreißer in den Daten nachgewiesen werden.
 
-Die starke Korrelation und das erfolgreiche Regressionsmodell untermauern, dass die drei Messstationen als vernetztes System agieren. Eine Limitation der Arbeit ist die Nichtberücksichtigung der Wetterdaten. Zukünftige Analysen könnten daher untersuchen, welchen quantitativen Einfluss Temperatur und Wetter auf die Passantenfrequenz haben, um die Vorhersagemodelle weiter zu verfeinern und ein noch umfassenderes Bild der urbanen Mobilität zu zeichnen.
+Die Explorative Datenanalyse (EDA) der Würzburger Passantenzahlen an drei Punkten in der Innenstadt für das Jahr 2024 hat erfolgreich grundlegende Muster und Zusammenhänge aufgedeckt. Als Antwort auf die Leitfragen wurde die Schönbornstraße eindeutig als belebtester Standort identifiziert, deren hohe Frequenz auf ihre zentrale Lage als Einkaufsstraße und die Nähe zu Sehenswürdigkeiten zurückzuführen ist. Die Analyse bestätigte klare Wochen- und Tagesrhythmen, die dem typischen Innenstadtleben mit Pendler- und Einkaufsverkehr entsprechen. Zudem konnten saisonale Ereignisse wie der Weihnachtsmarkt und die Allerheiligenmesse mit Mantelsonntag als deutliche Ausreißer in den Daten nachgewiesen werden.
+
+Die starke Korrelation und das erfolgreiche Regressionsmodell untermauern, dass die drei Messstationen als vernetztes System agieren. Ein Ausbau der Analyse könnte fortführend noch die Wetterdaten berücksichtigen. Zukünftige Analysen könnten daher untersuchen, welchen quantitativen Einfluss Temperatur und Wetter auf die Passantenfrequenz haben, um die Vorhersagemodelle weiter zu verfeinern und ein noch umfassenderes Bild der urbanen Mobilität zu zeichnen.
 
 # Literatur
