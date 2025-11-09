@@ -1,11 +1,10 @@
 ---
 title: "Weiner_Passanten01"
 output:
-  html_document:
-    df_print: paged
-    toc: true
   pdf_document:
     latex_engine: xelatex
+    toc: true
+  html_notebook:
     toc: true
 bibliography: bib.bib
 csl: ieee.csl
@@ -168,9 +167,9 @@ Die Messstation Schönbornstraße befindet sich nah an der Marienkapelle, die Me
 
 Nach der grundlegenden Beschreibung der Daten und einer Einführung in den Datensatz sowie seinen Kontext folgen Leitfragen, welche helfen, die EDA zu leiten.
 
-1. Was ist die beliebteste Region in der Innenstadt?
-2. Woher kommt die Beliebtheit (Attraktionen, wichtiger Teil des Alltags, Veranstaltungsorte, ...)?
-3. Gibt es besondere Ereignisse in der Würzburger Innenstadt, welche erkennbar sind?
+1.  Was ist die beliebteste Region in der Innenstadt?
+2.  Woher kommt die Beliebtheit (Attraktionen, wichtiger Teil des Alltags, Veranstaltungsorte, ...)?
+3.  Gibt es besondere Ereignisse in der Würzburger Innenstadt, welche erkennbar sind?
 
 ## 2. Aggregierte Jahresanalyse der Standorte
 
@@ -685,9 +684,9 @@ ggplot(model_data_augmented, aes(x = stunde)) +
 
 Das Diagramm stellt die tatsächlichen Werte (blaue Punkte) den vom Modell vorhergesagten Werten (rote Kreuze) für jede Stunde gegenüber. - Die grünen Verbindungslinien visualisieren den Vorhersagefehler (die Residuen) für jede Stunde. - Man erkennt, dass die Linien insgesamt sehr kurz sind, was die hohe Genauigkeit des Modells visuell bestätigt. Die Vorhersagen liegen sehr nah an den echten Werten.
 
-Eine Abweichung, bei der das Modell weniger  Passantenvorhersagt (Tatsächlicher Wert liegt über der Vorhersage) ist morgens (5 - 7 Uhr) und nachmittags im Zeitraum 15-18 Uhr. Diese Abweichung könnte durch das erhöhte Pendleraufkommen am Hauptbahnhof zu Beginn und Ende eines Arbeitstages entstehen, welche jedoch nicht die beiden anderen Straßen passieren. 
+Eine Abweichung, bei der das Modell weniger Passantenvorhersagt (Tatsächlicher Wert liegt über der Vorhersage) ist morgens (5 - 7 Uhr) und nachmittags im Zeitraum 15-18 Uhr. Diese Abweichung könnte durch das erhöhte Pendleraufkommen am Hauptbahnhof zu Beginn und Ende eines Arbeitstages entstehen, welche jedoch nicht die beiden anderen Straßen passieren.
 
-Im Zeitraum von 10 bis 13 Uhr sagt das Modell einen höheren Wert voraus. Das bedeutet, dass bei Annahme der Auslastung von Schönborn- und Spiegelstraße die Kaiserstraße voller sein müsste. Aus dem Liniendiagramm der Aufgabe 5 ist zu erkennen, dass die Spiegelstraße um 10 Uhr einen „Mittagspeak“ hat. Die Kaiserstraße hingegen stagniert um 10 Uhr, bevor sie gegen 15 Uhr ihren Peak erreicht. Der Peak der Spiegelstraße könnte hier die Erklärung für das „Überschätzen“ des Modells sein. Der Grund hierfür könnte die Benutzung der Spiegelstraße in der Mittagspause sein, z. B. in Richtung Hofgarten, während jedoch die Pendlerverkehre an der Kaiserstraße im Verhältnis geringer sind. 
+Im Zeitraum von 10 bis 13 Uhr sagt das Modell einen höheren Wert voraus. Das bedeutet, dass bei Annahme der Auslastung von Schönborn- und Spiegelstraße die Kaiserstraße voller sein müsste. Aus dem Liniendiagramm der Aufgabe 5 ist zu erkennen, dass die Spiegelstraße um 10 Uhr einen „Mittagspeak“ hat. Die Kaiserstraße hingegen stagniert um 10 Uhr, bevor sie gegen 15 Uhr ihren Peak erreicht. Der Peak der Spiegelstraße könnte hier die Erklärung für das „Überschätzen“ des Modells sein. Der Grund hierfür könnte die Benutzung der Spiegelstraße in der Mittagspause sein, z. B. in Richtung Hofgarten, während jedoch die Pendlerverkehre an der Kaiserstraße im Verhältnis geringer sind.
 
 Zusammenfassend lässt sich sagen, dass das lineare Regressionsmodell hervorragend geeignet ist, die Passantenfrequenz der Kaiserstraße vorherzusagen. Dies untermauert die bereits in der Korrelationsanalyse gezeigte starke systemische Verbindung der Passantenströme an den drei betrachteten Pukten der Innenstadt.
 
